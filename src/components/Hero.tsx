@@ -1,8 +1,15 @@
 'use client'
 import { ArrowRight, PlayCircle, CheckCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import ContactModal from './ContactModal'
 
 export default function Hero() {
+
+  
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
+
+
+
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -10,7 +17,7 @@ export default function Hero() {
   }, [])
 
   const scrollToProjects = () => {
-    const projectsSection = document.getElementById('projects')
+    const projectsSection = document.getElementById('Case_Studies')
     if (projectsSection) {
       const headerOffset = 80
       const elementPosition = projectsSection.getBoundingClientRect().top
@@ -22,9 +29,7 @@ export default function Hero() {
     }
   }
 
-  const handleFreeConsultation = () => {
-    alert('Opening consultation form!')
-  }
+
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -88,7 +93,10 @@ export default function Hero() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
-                onClick={handleFreeConsultation}
+
+         
+                onClick={() => setIsContactModalOpen(true)}
+
                 className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center space-x-3 overflow-hidden"
               >
                 <span className="relative z-10">Get a Free Consultation</span>
@@ -105,6 +113,9 @@ export default function Hero() {
               </button>
             </div>
 
+
+                
+                                
             {/* Trust Indicators */}
             <div className="pt-8 border-t border-slate-200">
               <div className="flex flex-wrap gap-6 text-sm text-slate-600">
@@ -258,6 +269,14 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
+
+      {/* Contact Modal */}
+        <ContactModal 
+          isOpen={isContactModalOpen}
+          onClose={() => setIsContactModalOpen(false)}
+        />
+
     </section>
   )
 }

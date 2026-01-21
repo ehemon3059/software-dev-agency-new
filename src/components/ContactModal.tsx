@@ -227,11 +227,11 @@ export default function ContactModal({ isOpen, onClose, defaultTab = 'inquiry' }
 
 
   const handleWhatsAppClick = () => {
-    const whatsappNumber = '8801XXXXXXXXX'
+    const whatsappNumber = '8801721821456'
     const message = encodeURIComponent(
       `Hi! I'd like to discuss a project.\n\nName: ${formData.name || 'Not provided'}\nEmail: ${formData.email || 'Not provided'}\nService: ${formData.service || 'Not specified'}`
     )
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank')
+    window.open(`https://wa.me/${+8801721821456}?text=${message}`, '_blank')
   }
 
   if (!mounted && !isOpen) return null
@@ -451,13 +451,16 @@ export default function ContactModal({ isOpen, onClose, defaultTab = 'inquiry' }
                     <MessageCircle className="w-4 h-4" />
                     WhatsApp
                   </button>
-                  <button
-                    onClick={() => window.location.href = 'mailto:hello@example.com'}
+
+                   <button
+                    onClick={() => window.open('https://mail.google.com/mail/?view=cm&fs=1&to=eh.web.dev200@gmail.com', '_blank')}
                     className="flex-1 px-4 py-3 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-900 transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <Mail className="w-4 h-4" />
                     Email
                   </button>
+
+
                 </div>
               </div>
             </div>

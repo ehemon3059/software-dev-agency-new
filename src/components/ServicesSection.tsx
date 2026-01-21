@@ -15,14 +15,15 @@ import { useEffect, useRef, useState } from 'react'
 // Animated geometric grid background
 function GeometricGrid() {
   const canvasRef = useRef(null)
-  const animationRef = useRef(null)
+  const animationRef = useRef<number | null>(null)
   const timeRef = useRef(0)
 
   useEffect(() => {
-    const canvas = canvasRef.current
+    const canvas = canvasRef.current as unknown as HTMLCanvasElement
     if (!canvas) return
 
     const ctx = canvas.getContext('2d')
+    if (!ctx) return
     
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth
@@ -33,7 +34,7 @@ function GeometricGrid() {
 
     // Create grid points
     const gridSize = 60
-    const dots = []
+    const dots: { baseX: number; baseY: number; phase: number }[] = []
     
     for (let x = 0; x < canvas.width; x += gridSize) {
       for (let y = 0; y < canvas.height; y += gridSize) {
@@ -46,6 +47,8 @@ function GeometricGrid() {
     }
 
     function animate() {
+      if (!ctx) return
+      
       timeRef.current += 0.02
       
       ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -323,7 +326,7 @@ export default function ServicesSection() {
 }
 
 // Helper function for color classes
-function getColorClass(color) {
+function getColorClass(color:string) {
   switch (color) {
     case 'blue':
       return { bg: 'bg-blue-100', text: 'text-blue-600' }

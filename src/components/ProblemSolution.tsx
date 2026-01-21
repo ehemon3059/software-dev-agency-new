@@ -41,8 +41,8 @@ const problemCards = [
 
 // Animated gradient waves background
 function GradientWaves() {
-  const canvasRef = useRef(null)
-  const animationRef = useRef(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const animationRef = useRef<number | null>(null)
   const timeRef = useRef(0)
 
   useEffect(() => {
@@ -58,45 +58,48 @@ function GradientWaves() {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-    function animate() {
+       function animate() {
       timeRef.current += 0.01
       
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Draw multiple wave layers
-      const waves = [
-        { amplitude: 30, frequency: 0.02, speed: 0.5, opacity: 0.1, color: '99, 102, 241' },
-        { amplitude: 40, frequency: 0.015, speed: 0.7, opacity: 0.08, color: '139, 92, 246' },
-        { amplitude: 35, frequency: 0.025, speed: 0.4, opacity: 0.06, color: '59, 130, 246' },
-      ]
+        // Draw multiple wave layers
+        const waves = [
+          { amplitude: 30, frequency: 0.02, speed: 0.5, opacity: 0.1, color: '99, 102, 241' },
+          { amplitude: 40, frequency: 0.015, speed: 0.7, opacity: 0.08, color: '139, 92, 246' },
+          { amplitude: 35, frequency: 0.025, speed: 0.4, opacity: 0.06, color: '59, 130, 246' },
+        ]
 
-      waves.forEach((wave, index) => {
-        ctx.beginPath()
-        ctx.moveTo(0, canvas.height / 2)
+        waves.forEach((wave, index) => {
+          ctx.beginPath()
+          ctx.moveTo(0, canvas.height / 2)
 
-        for (let x = 0; x < canvas.width; x++) {
-          const y = canvas.height / 2 + 
-                    Math.sin(x * wave.frequency + timeRef.current * wave.speed) * wave.amplitude +
-                    Math.sin(x * wave.frequency * 0.5 + timeRef.current * wave.speed * 1.5) * wave.amplitude * 0.5
-          ctx.lineTo(x, y)
-        }
+          for (let x = 0; x < canvas.width; x++) {
+            const y = canvas.height / 2 + 
+                      Math.sin(x * wave.frequency + timeRef.current * wave.speed) * wave.amplitude +
+                      Math.sin(x * wave.frequency * 0.5 + timeRef.current * wave.speed * 1.5) * wave.amplitude * 0.5
+            ctx.lineTo(x, y)
+          }
 
-        ctx.lineTo(canvas.width, canvas.height)
-        ctx.lineTo(0, canvas.height)
-        ctx.closePath()
+          ctx.lineTo(canvas.width, canvas.height)
+          ctx.lineTo(0, canvas.height)
+          ctx.closePath()
 
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-        gradient.addColorStop(0, `rgba(${wave.color}, ${wave.opacity})`)
-        gradient.addColorStop(1, `rgba(${wave.color}, 0)`)
-        
-        ctx.fillStyle = gradient
-        ctx.fill()
-      })
+          const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+          gradient.addColorStop(0, `rgba(${wave.color}, ${wave.opacity})`)
+          gradient.addColorStop(1, `rgba(${wave.color}, 0)`)
+          
+          ctx.fillStyle = gradient
+          ctx.fill()
+        })
+      }
 
       animationRef.current = requestAnimationFrame(animate)
     }
 
     animate()
+      
 
     return () => {
       window.removeEventListener('resize', resizeCanvas)

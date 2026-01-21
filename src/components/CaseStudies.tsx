@@ -17,17 +17,20 @@ import {
 import { useState, useEffect, useRef } from 'react'
 import ContactModal from './ContactModal'
 
+
+
 // Floating orbs with blur effect
 function FloatingOrbs() {
-  const canvasRef = useRef(null)
-  const animationRef = useRef(null)
-  const orbsRef = useRef([])
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const animationRef = useRef<number | null>(null)
+  const orbsRef = useRef<any[]>([])
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const ctx = canvas.getContext('2d')
+    if (!ctx) return
     
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth
@@ -38,30 +41,37 @@ function FloatingOrbs() {
 
     // Create orb objects
     class Orb {
-      constructor() {
-        this.x = Math.random() * canvas.width
-        this.y = Math.random() * canvas.height
+      x: number
+      y: number
+      radius: number
+      vx: number
+      vy: number
+      hue: number
+      opacity: number
+
+      constructor(canvasWidth: number, canvasHeight: number) {
+        this.x = Math.random() * canvasWidth
+        this.y = Math.random() * canvasHeight
         this.radius = Math.random() * 80 + 40
         this.vx = (Math.random() - 0.5) * 0.3
         this.vy = (Math.random() - 0.5) * 0.3
-        this.hue = Math.random() * 60 + 200 // Blue to purple range
+        this.hue = Math.random() * 60 + 200
         this.opacity = Math.random() * 0.3 + 0.1
       }
 
-      update() {
+      update(canvasWidth: number, canvasHeight: number) {
         this.x += this.vx
         this.y += this.vy
 
-        // Bounce off edges
-        if (this.x < -this.radius || this.x > canvas.width + this.radius) {
+        if (this.x < -this.radius || this.x > canvasWidth + this.radius) {
           this.vx *= -1
         }
-        if (this.y < -this.radius || this.y > canvas.height + this.radius) {
+        if (this.y < -this.radius || this.y > canvasHeight + this.radius) {
           this.vy *= -1
         }
       }
 
-      draw() {
+      draw(ctx: CanvasRenderingContext2D) {
         const gradient = ctx.createRadialGradient(
           this.x, this.y, 0,
           this.x, this.y, this.radius
@@ -77,24 +87,28 @@ function FloatingOrbs() {
       }
     }
 
-    // Initialize orbs
     const orbCount = Math.min(6, Math.floor(canvas.width / 200))
     orbsRef.current = []
     for (let i = 0; i < orbCount; i++) {
-      orbsRef.current.push(new Orb())
+      orbsRef.current.push(new Orb(canvas.width, canvas.height))
     }
 
-    // Animation loop
     function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      if (!ctx) return
+      if (canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+      }
 
       orbsRef.current.forEach(orb => {
-        orb.update()
-        orb.draw()
+        if (canvas) {
+          orb.update(canvas.width, canvas.height)
+          orb.draw(ctx)
+        }
       })
 
       animationRef.current = requestAnimationFrame(animate)
     }
+// ...existing code...
 
     animate()
 
@@ -225,11 +239,8 @@ export default function CaseStudies() {
     const [isContactModalOpen, setIsContactModalOpen] = useState(false)
 
   const [activeCaseStudy, setActiveCaseStudy] = useState(0)
-
-
-
   const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef(null)
+  const sectionRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -261,11 +272,9 @@ export default function CaseStudies() {
       className="py-20 bg-white relative overflow-hidden" 
       id="Case_Studies"
     >
-      {/* Animated floating orbs background */}
       {isVisible && <FloatingOrbs />}
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        {/* Section Title */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Real Projects, Real Results
@@ -275,7 +284,6 @@ export default function CaseStudies() {
           </p>
         </div>
 
-        {/* Project Navigation */}
         <div className="flex overflow-x-auto pb-4 mb-8 scrollbar-hide">
           <div className="flex gap-3 min-w-max mx-auto">
             {caseStudies.map((study, index) => (
@@ -300,11 +308,8 @@ export default function CaseStudies() {
           </div>
         </div>
 
-        {/* Case Study Content */}
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Left Column - Challenge & Solution */}
           <div className="space-y-8">
-            {/* Project Header */}
             <div className="flex items-center gap-4">
               <div className={`w-14 h-14 ${getColorClass(caseStudies[activeCaseStudy].color).bg} rounded-xl flex items-center justify-center`}>
                 {(() => {
@@ -327,7 +332,6 @@ export default function CaseStudies() {
               </div>
             </div>
 
-            {/* The Challenge */}
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -340,7 +344,6 @@ export default function CaseStudies() {
               </p>
             </div>
 
-            {/* Our Solution */}
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -362,9 +365,7 @@ export default function CaseStudies() {
             </div>
           </div>
 
-          {/* Right Column - Impact & Stats */}
           <div className="space-y-8">
-            {/* Impact Stats */}
             <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-6">
               <h4 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                 <TrendingUp className="w-6 h-6 text-blue-600" />
@@ -392,7 +393,6 @@ export default function CaseStudies() {
               </p>
             </div>
 
-            {/* Tech Stack & Approach */}
             <div className="border border-gray-200 rounded-xl p-6">
               <h4 className="text-xl font-bold text-gray-900 mb-4">
                 Development Approach
@@ -421,7 +421,6 @@ export default function CaseStudies() {
                 </div>
               </div>
 
-              {/* Tech Stack Tags */}
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <h5 className="text-sm font-semibold text-gray-900 mb-3">
                   Technologies Used
@@ -439,7 +438,6 @@ export default function CaseStudies() {
               </div>
             </div>
 
-            {/* CTA */}
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6 text-center">
               <h4 className="text-lg font-bold text-gray-900 mb-3">
                 Have a similar project?
@@ -447,20 +445,17 @@ export default function CaseStudies() {
               <p className="text-gray-700 mb-4">
                 Let's discuss how we can build your solution
               </p>
-              <button 
-                 onClick={() => setIsContactModalOpen(true)}
+              <button onClick={() => setIsContactModalOpen(true)} 
+               
                 className="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300"
               >
                 <span>Start Your Project</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-
-  
             </div>
           </div>
         </div>
 
-        {/* Project Dots Navigation */}
         <div className="flex justify-center gap-2">
           {caseStudies.map((study, index) => (
             <button
@@ -478,19 +473,17 @@ export default function CaseStudies() {
       </div>
 
 
-           {/* Contact Modal */}
-            <ContactModal 
-              isOpen={isContactModalOpen}
-              onClose={() => setIsContactModalOpen(false)}
-            />
-             
+              {/* Contact Modal */}
+                <ContactModal 
+                  isOpen={isContactModalOpen}
+                  onClose={() => setIsContactModalOpen(false)}
+                />
 
     </section>
   )
 }
 
-// Helper function for color classes
-function getColorClass(color) {
+function getColorClass(color: string) {
   switch (color) {
     case 'blue':
       return { bg: 'bg-blue-100', text: 'text-blue-600', border: 'border-blue-200' }
@@ -505,8 +498,7 @@ function getColorClass(color) {
   }
 }
 
-// Helper function for tech stack
-function getTechStack(projectId) {
+function getTechStack(projectId: number) {
   switch (projectId) {
     case 1:
       return ["Next.js", "React", "Node.js", "PostgreSQL", "AWS", "Tailwind"]

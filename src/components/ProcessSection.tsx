@@ -19,16 +19,18 @@ import {
 import { useState, useEffect, useRef } from 'react'
 
 // Diagonal animated stripes background
+// Diagonal animated stripes background
 function DiagonalStripes() {
-  const canvasRef = useRef(null)
-  const animationRef = useRef(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const animationRef = useRef<number | null>(null)
   const offsetRef = useRef(0)
 
-  useEffect(() => {
+    useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const ctx = canvas.getContext('2d')
+    if (!ctx) return
     
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth
@@ -41,6 +43,8 @@ function DiagonalStripes() {
     const stripeSpacing = 80
 
     function animate() {
+      if (!canvas || !ctx) return
+      
       offsetRef.current += 0.3
       
       ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -85,6 +89,7 @@ function DiagonalStripes() {
       }
     }
   }, [])
+
 
   return (
     <canvas
@@ -219,12 +224,12 @@ export default function ProcessSection() {
   const [detailsVisible, setDetailsVisible] = useState(false)
   const [principlesVisible, setPrinciplesVisible] = useState(false)
   
-  const sectionRef = useRef(null)
-  const headerRef = useRef(null)
-  const navRef = useRef(null)
-  const timelineRef = useRef(null)
-  const detailsRef = useRef(null)
-  const principlesRef = useRef(null)
+  const sectionRef = useRef<HTMLElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const navRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
+  const detailsRef = useRef<HTMLDivElement>(null)
+  const principlesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -252,7 +257,7 @@ export default function ProcessSection() {
 
   // Staggered animations for different sections
   useEffect(() => {
-    const createObserver = (ref, setVisible, delay = 0) => {
+    const createObserver = (ref: React.RefObject<HTMLElement | null>, setVisible: (value: boolean) => void, delay = 0) => {
       return new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
@@ -284,7 +289,7 @@ export default function ProcessSection() {
     }
   }, [])
 
-  const getPhaseSteps = (phase) => {
+  const getPhaseSteps = (phase: string) => {
     return processSteps.filter(step => step.phase === phase)
   }
 
@@ -621,7 +626,7 @@ export default function ProcessSection() {
   )
 }
 
-function getColorClass(color) {
+function getColorClass(color: string) {
   switch (color) {
     case 'brand':
       return { bg: 'bg-green-100', text: 'text-green-700' }

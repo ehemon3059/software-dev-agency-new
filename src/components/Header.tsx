@@ -190,10 +190,10 @@ export default function Header() {
               className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1 transition-transform hover:scale-105"
             >
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-lg">SD</span>
+                <span className="text-white font-bold text-lg">E2</span>
               </div>
               <span className="text-xl font-bold text-slate-900">
-                Dev<span className="text-blue-600">Agency</span>
+               Algo<span className="text-blue-600">Wave</span>
               </span>
             </button>
 

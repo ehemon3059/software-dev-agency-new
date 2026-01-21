@@ -134,7 +134,7 @@ const [isContactModalOpen, setIsContactModalOpen] = useState(false)
               <ContactModal 
                 isOpen={isContactModalOpen}
                 onClose={() => setIsContactModalOpen(false)}
-                // defaultTab="consultation" // This will open with consultation tab active
+                 defaultTab="consultation" // This will open with consultation tab active
               />
               {/* Quick Info */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-5">
