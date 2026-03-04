@@ -10,10 +10,10 @@ const problemCards = [
     title: "Stuck with Broken Software",
     problem: "Your current system is buggy, slow, or built by developers who disappeared. Every fix creates new problems.",
     solution: "We audit your codebase, fix critical bugs, optimize performance, and document everything - so you're never stuck again.",
-    color: "red",
-    iconBg: "bg-red-100",
-    iconColor: "text-red-600",
-    borderColor: "border-red-100"
+    iconBgLight: "bg-red-100",
+    iconBgDark: "bg-red-900/50",
+    iconColorLight: "text-red-600",
+    iconColorDark: "text-red-400",
   },
   {
     id: 2,
@@ -21,10 +21,10 @@ const problemCards = [
     title: "Need an MVP Fast (But Right)",
     problem: "You have funding and a deadline. You need a working product in 4-8 weeks, but can't afford technical debt.",
     solution: "We build production-ready MVPs with clean architecture - ready to scale when you grow, not crumble under pressure.",
-    color: "blue",
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-    borderColor: "border-blue-100"
+    iconBgLight: "bg-blue-100",
+    iconBgDark: "bg-blue-900/50",
+    iconColorLight: "text-blue-600",
+    iconColorDark: "text-blue-400",
   },
   {
     id: 3,
@@ -32,15 +32,15 @@ const problemCards = [
     title: "Outdated Legacy Systems",
     problem: "Your PHP/WordPress site is holding you back. It's slow, insecure, and impossible to add new features.",
     solution: "We modernize legacy systems with modern frameworks - keeping your data, improving everything else.",
-    color: "purple",
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
-    borderColor: "border-purple-100"
+    iconBgLight: "bg-purple-100",
+    iconBgDark: "bg-purple-900/50",
+    iconColorLight: "text-purple-600",
+    iconColorDark: "text-purple-400",
   }
 ]
 
 // Animated gradient waves background
-function GradientWaves() {
+function GradientWaves({ isDarkMode }: { isDarkMode: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const animationRef = useRef<number | null>(null)
   const timeRef = useRef(0)
@@ -58,20 +58,26 @@ function GradientWaves() {
     resizeCanvas()
     window.addEventListener('resize', resizeCanvas)
 
-       function animate() {
+    function animate() {
       timeRef.current += 0.01
       
       if (ctx && canvas) {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-        // Draw multiple wave layers
-        const waves = [
-          { amplitude: 30, frequency: 0.02, speed: 0.5, opacity: 0.1, color: '99, 102, 241' },
-          { amplitude: 40, frequency: 0.015, speed: 0.7, opacity: 0.08, color: '139, 92, 246' },
-          { amplitude: 35, frequency: 0.025, speed: 0.4, opacity: 0.06, color: '59, 130, 246' },
-        ]
+        // Draw multiple wave layers with dark mode colors
+        const waves = isDarkMode
+          ? [
+              { amplitude: 30, frequency: 0.02, speed: 0.5, opacity: 0.15, color: '129, 140, 248' }, // indigo-400
+              { amplitude: 40, frequency: 0.015, speed: 0.7, opacity: 0.12, color: '167, 139, 250' }, // purple-400
+              { amplitude: 35, frequency: 0.025, speed: 0.4, opacity: 0.1, color: '96, 165, 250' },   // blue-400
+            ]
+          : [
+              { amplitude: 30, frequency: 0.02, speed: 0.5, opacity: 0.1, color: '99, 102, 241' },   // indigo-500
+              { amplitude: 40, frequency: 0.015, speed: 0.7, opacity: 0.08, color: '139, 92, 246' },  // purple-500
+              { amplitude: 35, frequency: 0.025, speed: 0.4, opacity: 0.06, color: '59, 130, 246' },   // blue-500
+            ]
 
-        waves.forEach((wave, index) => {
+        waves.forEach((wave) => {
           ctx.beginPath()
           ctx.moveTo(0, canvas.height / 2)
 
@@ -99,7 +105,6 @@ function GradientWaves() {
     }
 
     animate()
-      
 
     return () => {
       window.removeEventListener('resize', resizeCanvas)
@@ -107,7 +112,7 @@ function GradientWaves() {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [])
+  }, [isDarkMode])
 
   return (
     <canvas
@@ -119,6 +124,7 @@ function GradientWaves() {
 
 export default function ProblemSolution() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const sectionRef = useRef(null)
 
   useEffect(() => {
@@ -138,28 +144,53 @@ export default function ProblemSolution() {
       observer.observe(sectionRef.current)
     }
 
+    // Check for dark mode on mount and when it changes
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark')
+      setIsDarkMode(isDark)
+    }
+
+    // Initial check
+    checkDarkMode()
+
+    // Create an observer to watch for class changes on html element
+    const mutationObserver = new MutationObserver(checkDarkMode)
+    mutationObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+
     return () => {
       if (sectionRef.current) {
         observer.unobserve(sectionRef.current)
       }
+      mutationObserver.disconnect()
     }
   }, [])
 
   return (
     <section 
       ref={sectionRef}
-      className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden"
+      className={`py-20 transition-colors duration-300 relative overflow-hidden ${
+        isDarkMode 
+          ? 'bg-gradient-to-b from-slate-900 to-slate-800' 
+          : 'bg-gradient-to-b from-gray-50 to-white'
+      }`}
     >
       {/* Animated gradient waves background */}
-      {isVisible && <GradientWaves />}
+      {isVisible && <GradientWaves isDarkMode={isDarkMode} />}
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Section Title */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}>
             Common Problems We Solve
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
+            isDarkMode ? 'text-slate-400' : 'text-gray-600'
+          }`}>
             We specialize in turning development challenges into scalable solutions
           </p>
         </div>
@@ -169,26 +200,36 @@ export default function ProblemSolution() {
           {problemCards.map((card) => (
             <div
               key={card.id}
-              className="group relative bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className={`group relative rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 ${
+                isDarkMode
+                  ? 'bg-slate-800 border border-slate-700 hover:border-slate-600 hover:shadow-lg hover:shadow-slate-900/50'
+                  : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg'
+              }`}
             >
               {/* Icon */}
-              <div className={`${card.iconBg} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
-                <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+              <div className={`${isDarkMode ? card.iconBgDark : card.iconBgLight} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
+                <card.icon className={`w-6 h-6 ${isDarkMode ? card.iconColorDark : card.iconColorLight}`} />
               </div>
 
               {/* Title */}
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
+              <h3 className={`text-xl font-bold mb-4 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
                 {card.title}
               </h3>
 
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-3 h-3 bg-red-500 rounded-full" aria-hidden="true" />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <span className={`text-sm font-semibold transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-300' : 'text-gray-700'
+                  }`}>
                     The Problem:
                   </span>
                 </div>
-                <p className="text-gray-800">
+                <p className={`transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-300' : 'text-gray-800'
+                }`}>
                   {card.problem}
                 </p>
               </div>
@@ -197,17 +238,25 @@ export default function ProblemSolution() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span className="text-sm font-semibold text-gray-700">
+                  <span className={`text-sm font-semibold transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-300' : 'text-gray-700'
+                  }`}>
                     Our Solution:
                   </span>
                 </div>
-                <p className="text-gray-800">
+                <p className={`transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-300' : 'text-gray-800'
+                }`}>
                   {card.solution}
                 </p>
               </div>
 
               {/* Subtle hover effect border */}
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-gray-100 rounded-xl pointer-events-none transition-colors duration-300" />
+              <div className={`absolute inset-0 border-2 rounded-xl pointer-events-none transition-colors duration-300 ${
+                isDarkMode
+                  ? 'border-transparent group-hover:border-slate-700'
+                  : 'border-transparent group-hover:border-gray-100'
+              }`} />
             </div>
           ))}
         </div>

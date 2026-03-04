@@ -151,18 +151,7 @@ export default function ContactModal({ isOpen, onClose, defaultTab = 'inquiry' }
     setConsultationData({ ...consultationData, [e.target.name]: e.target.value })
   }
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault()
-  //   setIsSubmitting(true)
-  //   await new Promise(resolve => setTimeout(resolve, 1500))
-  //   console.log('Form submitted:', formData)
-  //   setIsSubmitting(false)
-  //   setIsSubmitted(true)
-  //   setTimeout(() => {
-  //     setIsSubmitted(false)
-  //     handleClose()
-  //   }, 3000)
-  // }
+ 
 
       const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
@@ -178,27 +167,13 @@ export default function ContactModal({ isOpen, onClose, defaultTab = 'inquiry' }
           handleClose()
         }, 3000)
       } else {
-        alert("Failed to send inquiry. Please try again.")
+        alert(`Failed to send: ${result.error}`) // shows real error now
       }
+
       setIsSubmitting(false)
     }
 
-  // const handleConsultationSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault()
-  //   setIsSubmittingConsultation(true)
-  //   await new Promise(resolve => setTimeout(resolve, 1500))
-  //   console.log('Consultation requested:', {
-  //     ...consultationData,
-  //     userInfo: { name: formData.name || 'Not provided', email: formData.email || 'Not provided' }
-  //   })
-  //   setIsSubmittingConsultation(false)
-  //   setIsConsultationSubmitted(true)
-  //   setTimeout(() => {
-  //     setIsConsultationSubmitted(false)
-  //     handleClose()
-  //   }, 3000)
-  // }
-
+ 
       const handleConsultationSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
       setIsSubmittingConsultation(true)
@@ -219,8 +194,10 @@ export default function ContactModal({ isOpen, onClose, defaultTab = 'inquiry' }
           handleClose()
         }, 3000)
       } else {
-        alert("Failed to schedule consultation.")
+        alert(`Failed to send: ${result.error}`) // shows real error now
       }
+
+
       setIsSubmittingConsultation(false)
     }
 
@@ -453,7 +430,7 @@ export default function ContactModal({ isOpen, onClose, defaultTab = 'inquiry' }
                   </button>
 
                    <button
-                    onClick={() => window.open('https://mail.google.com/mail/?view=cm&fs=1&to=eh.web.dev200@gmail.com', '_blank')}
+                    onClick={() => window.open('https://mail.google.com/mail/?view=cm&fs=1&to=hello@papatiger.tech', '_blank')}
                     className="flex-1 px-4 py-3 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-900 transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <Mail className="w-4 h-4" />

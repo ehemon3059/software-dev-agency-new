@@ -6,8 +6,25 @@ import Header from '@/components/Header'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'DevAgency | Custom Software Development for Startups',
-  description: 'We build production-ready web applications for service-based businesses. Clean code, scalable architecture, long-term support.',
+  title: 'papatiger.tech | Custom Software Development & Scalable Web Solutions',
+  description: 'papatiger.tech builds production-ready web applications, SaaS platforms, and enterprise software solutions. We specialize in scalable architecture, clean code, and long-term technical partnership for startups and growing businesses.',
+  keywords: [
+    'papatiger.tech',
+    'custom software development',
+    'SaaS development',
+    'web application development',
+    'enterprise software',
+    'Next.js development',
+    'startup software partner'
+  ],
+  authors: [{ name: 'papatiger.tech' }],
+  openGraph: {
+    title: 'papatiger.tech | Custom Software Development',
+    description: 'Production-ready SaaS and web applications built with scalable architecture and clean engineering standards.',
+    url: 'https://papatiger.tech',
+    siteName: 'papatiger.tech',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({

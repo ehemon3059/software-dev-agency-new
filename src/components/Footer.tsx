@@ -26,7 +26,7 @@ export default function Footer() {
               <h3 className="text-lg font-bold mb-6 text-white">Contact Information</h3>
               <div className="space-y-4">
                 <a 
-                  href="mailto:hello@devagency.com"
+                  href="mailto:hello@papatiger.tech"
                   className="flex items-center gap-3 text-slate-300 hover:text-white transition-colors group"
                 >
                   <div className="w-10 h-10 bg-brand/20 rounded-lg flex items-center justify-center group-hover:bg-brand/30 transition-colors">
@@ -34,7 +34,7 @@ export default function Footer() {
                   </div>
                   <div>
                     <div className="font-medium">Email us</div>
-                    <div className="text-sm text-slate-400">hello@devagency.com</div>
+                    <div className="text-sm text-slate-400">hello@papatiger.tech</div>
                   </div>
                 </a>
 
@@ -154,7 +154,7 @@ export default function Footer() {
             {/* Copyright */}
             <div className="text-center md:text-left">
               <div className="flex items-center gap-2 text-slate-400">
-                <span>© {currentYear} DevAgency.</span>
+                <span>© {currentYear} papatiger.tech</span>
                 <span className="hidden sm:inline">Built with</span>
                 <Heart className="w-4 h-4 text-rose-500 inline" />
                 <span className="hidden sm:inline">in Dhaka, Bangladesh.</span>

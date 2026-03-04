@@ -19,13 +19,12 @@ import {
 import { useState, useEffect, useRef } from 'react'
 
 // Diagonal animated stripes background
-// Diagonal animated stripes background
-function DiagonalStripes() {
+function DiagonalStripes({ isDarkMode }: { isDarkMode: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const animationRef = useRef<number | null>(null)
   const offsetRef = useRef(0)
 
-    useEffect(() => {
+  useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -49,7 +48,7 @@ function DiagonalStripes() {
       
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Draw diagonal stripes
+      // Draw diagonal stripes with dark mode colors
       ctx.save()
       
       const diagonal = Math.sqrt(canvas.width * canvas.width + canvas.height * canvas.height)
@@ -57,10 +56,12 @@ function DiagonalStripes() {
       for (let i = -diagonal; i < diagonal * 2; i += stripeSpacing) {
         const x = i + offsetRef.current
         
+        // Use different colors for dark mode
+        const stripeColor = isDarkMode ? '96, 165, 250' : '59, 130, 246' // blue-400 for dark, blue-500 for light
         const gradient = ctx.createLinearGradient(x, 0, x + stripeWidth, 0)
-        gradient.addColorStop(0, 'rgba(59, 130, 246, 0)')
-        gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.08)')
-        gradient.addColorStop(1, 'rgba(59, 130, 246, 0)')
+        gradient.addColorStop(0, `rgba(${stripeColor}, 0)`)
+        gradient.addColorStop(0.5, `rgba(${stripeColor}, ${isDarkMode ? 0.15 : 0.08})`)
+        gradient.addColorStop(1, `rgba(${stripeColor}, 0)`)
         
         ctx.fillStyle = gradient
         
@@ -88,8 +89,7 @@ function DiagonalStripes() {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [])
-
+  }, [isDarkMode])
 
   return (
     <canvas
@@ -218,6 +218,7 @@ const workingPrinciples = [
 export default function ProcessSection() {
   const [activeStep, setActiveStep] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const [headerVisible, setHeaderVisible] = useState(false)
   const [navVisible, setNavVisible] = useState(false)
   const [timelineVisible, setTimelineVisible] = useState(false)
@@ -248,10 +249,27 @@ export default function ProcessSection() {
       observer.observe(sectionRef.current)
     }
 
+    // Check for dark mode on mount and when it changes
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark')
+      setIsDarkMode(isDark)
+    }
+
+    // Initial check
+    checkDarkMode()
+
+    // Create an observer to watch for class changes on html element
+    const themeObserver = new MutationObserver(checkDarkMode)
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+
     return () => {
       if (sectionRef.current) {
         observer.unobserve(sectionRef.current)
       }
+      themeObserver.disconnect()
     }
   }, [])
 
@@ -296,10 +314,14 @@ export default function ProcessSection() {
   return (
     <section 
       ref={sectionRef}
-      className="py-20 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden" 
+      className={`py-20 transition-colors duration-300 relative overflow-hidden ${
+        isDarkMode 
+          ? 'bg-gradient-to-b from-slate-900 to-slate-800' 
+          : 'bg-gradient-to-b from-slate-50 to-white'
+      }`} 
       id="Process"
     >
-      {isVisible && <DiagonalStripes />}
+      {isVisible && <DiagonalStripes isDarkMode={isDarkMode} />}
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Section Title - Fade in from top */}
@@ -311,10 +333,14 @@ export default function ProcessSection() {
               : 'opacity-0 -translate-y-8'
           }`}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
+            isDarkMode ? 'text-white' : 'text-slate-900'
+          }`}>
             How We Work Together
           </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
+            isDarkMode ? 'text-slate-400' : 'text-slate-600'
+          }`}>
             A proven methodology from initial idea to successful launch
           </p>
         </div>
@@ -337,14 +363,20 @@ export default function ProcessSection() {
                 }}
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                   processSteps[activeStep].phase === phase
-                    ? "bg-green-100 text-green-700 shadow-lg border-2 border-green-300"
-                    : "bg-white border-2 border-slate-200 text-slate-600 hover:border-green-300"
+                    ? isDarkMode
+                      ? "bg-green-900/50 text-green-400 border-2 border-green-700 shadow-lg"
+                      : "bg-green-100 text-green-700 shadow-lg border-2 border-green-300"
+                    : isDarkMode
+                      ? "bg-slate-800 border-2 border-slate-700 text-slate-300 hover:border-green-700"
+                      : "bg-white border-2 border-slate-200 text-slate-600 hover:border-green-300"
                 }`}
               >
                 {phase}
               </button>
               {index < 2 && (
-                <ArrowRight className="w-5 h-5 text-slate-300 hidden md:block" />
+                <ArrowRight className={`w-5 h-5 hidden md:block transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-600' : 'text-slate-300'
+                }`} />
               )}
             </div>
           ))}
@@ -355,7 +387,11 @@ export default function ProcessSection() {
           ref={timelineRef}
           className="relative mb-12"
         >
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-slate-400 via-emerald-500 to-purple-500 transform -translate-y-1/2 z-0" />
+          <div className={`hidden lg:block absolute top-1/2 left-0 right-0 h-1 transform -translate-y-1/2 z-0 transition-colors duration-300 ${
+            isDarkMode 
+              ? 'bg-gradient-to-r from-slate-700 via-emerald-800 to-purple-800' 
+              : 'bg-gradient-to-r from-slate-400 via-emerald-500 to-purple-500'
+          }`} />
           
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 relative z-10">
             {processSteps.map((step, index) => (
@@ -372,20 +408,26 @@ export default function ProcessSection() {
                   onClick={() => setActiveStep(index)}
                   className={`group w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-300 ${
                     index === activeStep
-                      ? "bg-green-100 text-green-600 border-2 border-green-300 scale-110 shadow-lg shadow-green-500/50"
-                      : "bg-white border-2 border-slate-200 text-slate-600 hover:border-green-300 hover:scale-105"
+                      ? isDarkMode
+                        ? "bg-green-900/50 text-green-400 border-2 border-green-700 scale-110 shadow-lg shadow-green-900/50"
+                        : "bg-green-100 text-green-600 border-2 border-green-300 scale-110 shadow-lg shadow-green-500/50"
+                      : isDarkMode
+                        ? "bg-slate-800 border-2 border-slate-700 text-slate-400 hover:border-green-700 hover:scale-105"
+                        : "bg-white border-2 border-slate-200 text-slate-600 hover:border-green-300 hover:scale-105"
                   }`}
                 >
                   <step.icon className="w-7 h-7" />
                 </button>
 
                 <div className="text-center">
-                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-2 ${
-                    getColorClass(step.color).bg
-                  } ${getColorClass(step.color).text}`}>
+                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-2 transition-colors duration-300 ${
+                    getColorClass(step.color, isDarkMode).bg
+                  } ${getColorClass(step.color, isDarkMode).text}`}>
                     {step.phase}
                   </div>
-                  <h3 className="font-bold text-slate-900 text-sm">{step.title}</h3>
+                  <h3 className={`font-bold text-sm transition-colors duration-300 ${
+                    isDarkMode ? 'text-white' : 'text-slate-900'
+                  }`}>{step.title}</h3>
                 </div>
               </div>
             ))}
@@ -406,23 +448,33 @@ export default function ProcessSection() {
             }`}
           >
             <div className="flex items-center gap-4 mb-2">
-              <div className={`w-12 h-12 ${getColorClass(processSteps[activeStep].color).bg} rounded-xl flex items-center justify-center transition-transform duration-300 hover:rotate-6`}>
+              <div className={`w-12 h-12 ${getColorClass(processSteps[activeStep].color, isDarkMode).bg} rounded-xl flex items-center justify-center transition-transform duration-300 hover:rotate-6`}>
                 {(() => {
                   const IconComponent = processSteps[activeStep].icon
-                  return <IconComponent className={`w-6 h-6 ${getColorClass(processSteps[activeStep].color).text}`} />
+                  return <IconComponent className={`w-6 h-6 ${getColorClass(processSteps[activeStep].color, isDarkMode).text}`} />
                 })()}
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-slate-900">
+                <h3 className={`text-2xl font-bold transition-colors duration-300 ${
+                  isDarkMode ? 'text-white' : 'text-slate-900'
+                }`}>
                   {processSteps[activeStep].title}
                 </h3>
-                <p className="text-slate-600">{processSteps[activeStep].description}</p>
+                <p className={`transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                }`}>{processSteps[activeStep].description}</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
-              <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
+            <div className={`border rounded-xl p-6 hover:shadow-lg transition-all duration-300 ${
+              isDarkMode
+                ? 'bg-gradient-to-br from-slate-800 to-slate-700 border-slate-700'
+                : 'bg-gradient-to-br from-slate-50 to-white border-slate-200'
+            }`}>
+              <h4 className={`text-lg font-semibold mb-4 flex items-center gap-2 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
+                <CheckCircle className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-emerald-500'}`} />
                 What We Do:
               </h4>
               <ul className="space-y-3">
@@ -434,15 +486,25 @@ export default function ProcessSection() {
                     }`}
                     style={{ transitionDelay: `${index * 80}ms` }}
                   >
-                    <div className="w-2 h-2 mt-2 rounded-full bg-green-500 flex-shrink-0" />
-                    <span className="text-slate-700">{task}</span>
+                    <div className={`w-2 h-2 mt-2 rounded-full flex-shrink-0 ${
+                      isDarkMode ? 'bg-green-400' : 'bg-green-500'
+                    }`} />
+                    <span className={`transition-colors duration-300 ${
+                      isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                    }`}>{task}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="bg-gradient-to-br from-emerald-50 to-white border border-emerald-200 rounded-xl p-5 hover:shadow-lg transition-shadow duration-300">
-              <h4 className="text-sm font-semibold text-emerald-900 mb-3 flex items-center gap-2">
+            <div className={`border rounded-xl p-5 hover:shadow-lg transition-all duration-300 ${
+              isDarkMode
+                ? 'bg-gradient-to-br from-emerald-900/30 to-slate-800 border-emerald-800'
+                : 'bg-gradient-to-br from-emerald-50 to-white border-emerald-200'
+            }`}>
+              <h4 className={`text-sm font-semibold mb-3 flex items-center gap-2 ${
+                isDarkMode ? 'text-emerald-400' : 'text-emerald-900'
+              }`}>
                 <FileText className="w-4 h-4" />
                 You'll Receive:
               </h4>
@@ -450,8 +512,12 @@ export default function ProcessSection() {
                 {processSteps[activeStep].deliverables.map((item, index) => (
                   <span 
                     key={index} 
-                    className={`px-3 py-1 bg-white border border-emerald-200 rounded-full text-sm text-emerald-700 transition-all duration-500 hover:scale-105 hover:shadow-md ${
+                    className={`px-3 py-1 border rounded-full text-sm transition-all duration-500 hover:scale-105 hover:shadow-md ${
                       detailsVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                    } ${
+                      isDarkMode
+                        ? 'bg-slate-800 border-emerald-800 text-emerald-400 hover:border-emerald-700'
+                        : 'bg-white border-emerald-200 text-emerald-700 hover:border-emerald-300'
                     }`}
                     style={{ transitionDelay: `${index * 100}ms` }}
                   >
@@ -470,33 +536,47 @@ export default function ProcessSection() {
                 : 'opacity-0 translate-x-12'
             }`}
           >
-            <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
-              <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <div className={`border rounded-xl p-6 hover:shadow-lg transition-all duration-300 ${
+              isDarkMode
+                ? 'bg-gradient-to-br from-green-900/30 to-slate-800 border-green-800'
+                : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
+            }`}>
+              <h4 className={`text-lg font-semibold mb-4 flex items-center gap-2 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
                 {(() => {
                   const InvolvementIcon = processSteps[activeStep].involvementIcon
-                  return <InvolvementIcon className="w-5 h-5 text-green-600" />
+                  return <InvolvementIcon className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                 })()}
                 Your Role:
               </h4>
-              <p className="text-slate-700 mb-4">
+              <p className={`mb-4 transition-colors duration-300 ${
+                isDarkMode ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 {processSteps[activeStep].yourInvolvement}
               </p>
               
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-700">Overall Progress</span>
-                  <span className="text-sm font-semibold text-green-600">
+                  <span className={`text-sm font-medium transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-400' : 'text-slate-700'
+                  }`}>Overall Progress</span>
+                  <span className={`text-sm font-semibold ${
+                    isDarkMode ? 'text-green-400' : 'text-green-600'
+                  }`}>
                     Step {processSteps[activeStep].id} of {processSteps.length}
                   </span>
                 </div>
-                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className={`h-2 rounded-full overflow-hidden transition-colors duration-300 ${
+                  isDarkMode ? 'bg-slate-700' : 'bg-slate-200'
+                }`}>
                   <div 
                     className={`h-full transition-all duration-700 rounded-full ${
-                      activeStep === 0 ? 'bg-slate-400' :
-                      activeStep === 1 ? 'bg-orange-400' :
-                      activeStep === 2 ? 'bg-yellow-400' :
-                      activeStep === 3 ? 'bg-blue-500' :
-                      'bg-emerald-500'
+                      activeStep === 0 ? (isDarkMode ? 'bg-slate-500' : 'bg-slate-400') :
+                      activeStep === 1 ? (isDarkMode ? 'bg-orange-600' : 'bg-orange-400') :
+                      activeStep === 2 ? (isDarkMode ? 'bg-yellow-600' : 'bg-yellow-400') :
+                      activeStep === 3 ? (isDarkMode ? 'bg-blue-600' : 'bg-blue-500') :
+                      (isDarkMode ? 'bg-emerald-600' : 'bg-emerald-500')
                     }`}
                     style={{ width: `${((activeStep + 1) / processSteps.length) * 100}%` }}
                   />
@@ -505,55 +585,75 @@ export default function ProcessSection() {
             </div>
 
             {activeStep < processSteps.length - 1 && (
-              <div className="border border-slate-200 rounded-xl p-5 hover:shadow-lg transition-all duration-300 hover:border-green-300">
-                <h4 className="text-sm font-semibold text-slate-600 mb-2">Coming Next:</h4>
+              <div className={`border rounded-xl p-5 hover:shadow-lg transition-all duration-300 hover:border-green-300 ${
+                isDarkMode ? 'border-slate-700' : 'border-slate-200'
+              }`}>
+                <h4 className={`text-sm font-semibold mb-2 transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                }`}>Coming Next:</h4>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 ${getColorClass(processSteps[activeStep + 1].color).bg} rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-6`}>
+                    <div className={`w-10 h-10 ${getColorClass(processSteps[activeStep + 1].color, isDarkMode).bg} rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-6`}>
                       {(() => {
                         const IconComponent = processSteps[activeStep + 1].icon
-                        return <IconComponent className={`w-5 h-5 ${getColorClass(processSteps[activeStep + 1].color).text}`} />
+                        return <IconComponent className={`w-5 h-5 ${getColorClass(processSteps[activeStep + 1].color, isDarkMode).text}`} />
                       })()}
                     </div>
                     <div>
-                      <div className="font-medium text-slate-900">
+                      <div className={`font-medium transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-slate-900'
+                      }`}>
                         {processSteps[activeStep + 1].title}
                       </div>
-                      <div className="text-sm text-slate-600">
+                      <div className={`text-sm transition-colors duration-300 ${
+                        isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                      }`}>
                         {processSteps[activeStep + 1].description}
                       </div>
                     </div>
                   </div>
                   <button
                     onClick={() => setActiveStep(activeStep + 1)}
-                    className="p-2 hover:bg-slate-100 rounded-lg transition-all duration-300 hover:scale-110"
+                    className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${
+                      isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-100'
+                    }`}
                   >
-                    <ArrowRight className="w-5 h-5 text-slate-400" />
+                    <ArrowRight className={`w-5 h-5 transition-colors duration-300 ${
+                      isDarkMode ? 'text-slate-500' : 'text-slate-400'
+                    }`} />
                   </button>
                 </div>
               </div>
             )}
 
             <div className={`rounded-xl p-5 transition-all duration-300 hover:shadow-lg ${
-              processSteps[activeStep].phase === "Start" ? "bg-blue-50 border border-blue-200 hover:border-blue-300" :
-              processSteps[activeStep].phase === "Work" ? "bg-emerald-50 border border-emerald-200 hover:border-emerald-300" :
-              "bg-purple-50 border border-purple-200 hover:border-purple-300"
+              processSteps[activeStep].phase === "Start" 
+                ? isDarkMode ? 'bg-blue-900/30 border border-blue-800 hover:border-blue-700' : 'bg-blue-50 border border-blue-200 hover:border-blue-300'
+              : processSteps[activeStep].phase === "Work" 
+                ? isDarkMode ? 'bg-emerald-900/30 border border-emerald-800 hover:border-emerald-700' : 'bg-emerald-50 border border-emerald-200 hover:border-emerald-300'
+              : isDarkMode ? 'bg-purple-900/30 border border-purple-800 hover:border-purple-700' : 'bg-purple-50 border border-purple-200 hover:border-purple-300'
             }`}>
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:rotate-12 ${
-                  processSteps[activeStep].phase === "Start" ? "bg-blue-100" :
-                  processSteps[activeStep].phase === "Work" ? "bg-emerald-100" :
-                  "bg-purple-100"
+                  processSteps[activeStep].phase === "Start" 
+                    ? isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
+                  : processSteps[activeStep].phase === "Work" 
+                    ? isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'
+                  : isDarkMode ? 'bg-purple-900/50' : 'bg-purple-100'
                 }`}>
-                  {processSteps[activeStep].phase === "Start" && <Target className="w-5 h-5 text-blue-600" />}
-                  {processSteps[activeStep].phase === "Work" && <Code2 className="w-5 h-5 text-emerald-600" />}
-                  {processSteps[activeStep].phase === "Finish" && <Rocket className="w-5 h-5 text-purple-600" />}
+                  {processSteps[activeStep].phase === "Start" && <Target className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />}
+                  {processSteps[activeStep].phase === "Work" && <Code2 className={`w-5 h-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />}
+                  {processSteps[activeStep].phase === "Finish" && <Rocket className={`w-5 h-5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />}
                 </div>
                 <div>
-                  <h5 className="font-semibold text-slate-900">
+                  <h5 className={`font-semibold transition-colors duration-300 ${
+                    isDarkMode ? 'text-white' : 'text-slate-900'
+                  }`}>
                     {processSteps[activeStep].phase} Phase
                   </h5>
-                  <p className="text-sm text-slate-600">
+                  <p className={`text-sm transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                  }`}>
                     {processSteps[activeStep].phase === "Start" && "Setting the foundation right"}
                     {processSteps[activeStep].phase === "Work" && "Building and refining iteratively"}
                     {processSteps[activeStep].phase === "Finish" && "Delivering and supporting"}
@@ -567,10 +667,14 @@ export default function ProcessSection() {
         {/* Working Principles - Zoom in effect */}
         <div 
           ref={principlesRef}
-          className={`relative overflow-hidden bg-gradient-to-br from-blue-400 via-blue-500 to-purple-700 rounded-3xl p-8 md:p-12 transition-all duration-1000 ${
+          className={`relative overflow-hidden rounded-3xl p-8 md:p-12 transition-all duration-1000 ${
             principlesVisible 
               ? 'opacity-100 scale-100' 
               : 'opacity-0 scale-95'
+          } ${
+            isDarkMode
+              ? 'bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900'
+              : 'bg-gradient-to-br from-blue-400 via-blue-500 to-purple-700'
           }`}
         >
           <div className="absolute inset-0 opacity-10">
@@ -592,29 +696,45 @@ export default function ProcessSection() {
               {workingPrinciples.map((principle, index) => (
                 <div 
                   key={index} 
-                  className={`group relative bg-white/95 backdrop-blur-lg rounded-2xl p-6 hover:bg-white transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-blue-600/20 ${
+                  className={`group relative backdrop-blur-lg rounded-2xl p-6 hover:shadow-2xl transition-all duration-500 hover:scale-105 ${
+                    isDarkMode
+                      ? 'bg-slate-800/95 hover:bg-slate-800 hover:shadow-blue-900/20'
+                      : 'bg-white/95 hover:bg-white hover:shadow-blue-600/20'
+                  } ${
                     principlesVisible 
                       ? 'opacity-100 translate-y-0' 
                       : 'opacity-0 translate-y-8'
                   }`}
                   style={{ transitionDelay: `${index * 150}ms` }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl"></div>
+                  <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl ${
+                    isDarkMode
+                      ? 'bg-gradient-to-br from-blue-600/30 to-purple-500/30'
+                      : 'bg-gradient-to-br from-blue-600/20 to-purple-500/20'
+                  }`}></div>
                   
                   <div className="flex flex-col items-center text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform duration-300 shadow-lg">
                       <principle.icon className="w-8 h-8 text-white" />
                     </div>
-                    <h4 className="font-bold text-slate-900 mb-2 text-lg">
+                    <h4 className={`font-bold mb-2 text-lg transition-colors duration-300 ${
+                      isDarkMode ? 'text-white' : 'text-slate-900'
+                    }`}>
                       {principle.title}
                     </h4>
-                    <p className="text-slate-600 text-sm leading-relaxed">
+                    <p className={`text-sm leading-relaxed transition-colors duration-300 ${
+                      isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                    }`}>
                       {principle.description}
                     </p>
                   </div>
 
-                  <div className="absolute top-4 right-4 w-8 h-8 bg-blue-600/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-xs font-bold text-blue-600">{index + 1}</span>
+                  <div className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${
+                    isDarkMode ? 'bg-blue-600/20' : 'bg-blue-600/10'
+                  }`}>
+                    <span className={`text-xs font-bold ${
+                      isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                    }`}>{index + 1}</span>
                   </div>
                 </div>
               ))}
@@ -626,19 +746,36 @@ export default function ProcessSection() {
   )
 }
 
-function getColorClass(color: string) {
-  switch (color) {
-    case 'brand':
-      return { bg: 'bg-green-100', text: 'text-green-700' }
-    case 'blue':
-      return { bg: 'bg-blue-100', text: 'text-blue-600' }
-    case 'emerald':
-      return { bg: 'bg-emerald-100', text: 'text-emerald-600' }
-    case 'amber':
-      return { bg: 'bg-amber-100', text: 'text-amber-600' }
-    case 'purple':
-      return { bg: 'bg-purple-100', text: 'text-purple-600' }
-    default:
-      return { bg: 'bg-slate-100', text: 'text-slate-600' }
+function getColorClass(color: string, isDarkMode: boolean) {
+  if (isDarkMode) {
+    switch (color) {
+      case 'brand':
+        return { bg: 'bg-green-900/50', text: 'text-green-400' }
+      case 'blue':
+        return { bg: 'bg-blue-900/50', text: 'text-blue-400' }
+      case 'emerald':
+        return { bg: 'bg-emerald-900/50', text: 'text-emerald-400' }
+      case 'amber':
+        return { bg: 'bg-amber-900/50', text: 'text-amber-400' }
+      case 'purple':
+        return { bg: 'bg-purple-900/50', text: 'text-purple-400' }
+      default:
+        return { bg: 'bg-slate-700', text: 'text-slate-300' }
+    }
+  } else {
+    switch (color) {
+      case 'brand':
+        return { bg: 'bg-green-100', text: 'text-green-700' }
+      case 'blue':
+        return { bg: 'bg-blue-100', text: 'text-blue-600' }
+      case 'emerald':
+        return { bg: 'bg-emerald-100', text: 'text-emerald-600' }
+      case 'amber':
+        return { bg: 'bg-amber-100', text: 'text-amber-600' }
+      case 'purple':
+        return { bg: 'bg-purple-100', text: 'text-purple-600' }
+      default:
+        return { bg: 'bg-slate-100', text: 'text-slate-600' }
+    }
   }
 }

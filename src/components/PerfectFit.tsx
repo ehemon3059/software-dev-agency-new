@@ -29,10 +29,12 @@ class ParticleNetwork {
   private mouseX: number = 0;
   private mouseY: number = 0;
   private mouseRadius: number = 150;
+  private isDarkMode: boolean;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, isDarkMode: boolean) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d')!;
+    this.isDarkMode = isDarkMode;
     this.init();
     this.bindEvents();
   }
@@ -85,7 +87,8 @@ class ParticleNetwork {
         Math.random() * this.canvas.width,
         Math.random() * this.canvas.height,
         this.canvas.width,
-        this.canvas.height
+        this.canvas.height,
+        this.isDarkMode
       ));
     }
   }
@@ -93,7 +96,9 @@ class ParticleNetwork {
   private draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw connecting lines
+    // Draw connecting lines with dark mode colors
+    const lineColor = this.isDarkMode ? '147, 197, 253' : '99, 102, 241'; // blue-300 for dark, indigo-500 for light
+
     for (let i = 0; i < this.particles.length; i++) {
       for (let j = i + 1; j < this.particles.length; j++) {
         const dx = this.particles[i].x - this.particles[j].x;
@@ -102,7 +107,7 @@ class ParticleNetwork {
         
         if (distance < 100) {
           this.ctx.beginPath();
-          this.ctx.strokeStyle = `rgba(99, 102, 241, ${0.15 * (1 - distance / 100)})`;
+          this.ctx.strokeStyle = `rgba(${lineColor}, ${this.isDarkMode ? 0.2 : 0.15 * (1 - distance / 100)})`;
           this.ctx.lineWidth = 0.8;
           this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
           this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
@@ -173,7 +178,7 @@ class Particle {
   speed: number;
   color: string;
 
-  constructor(x: number, y: number, maxX: number, maxY: number) {
+  constructor(x: number, y: number, maxX: number, maxY: number, isDarkMode: boolean) {
     this.x = x;
     this.y = y;
     this.originalX = x;
@@ -183,11 +188,12 @@ class Particle {
     this.radius = Math.random() * 1.5 + 0.5;
     this.maxX = maxX;
     this.maxY = maxY;
-    this.opacity = Math.random() * 0.4 + 0.2;
+    this.opacity = isDarkMode ? Math.random() * 0.5 + 0.3 : Math.random() * 0.4 + 0.2;
     this.speed = Math.random() * 0.3 + 0.1;
-    // Subtle color variations within indigo spectrum
-    const hue = 240 + Math.random() * 20 - 10; // Indigo with slight variations
-    this.color = `hsla(${hue}, 85%, 65%, ${this.opacity})`;
+    
+    // Subtle color variations with dark mode adjustments
+    const hue = isDarkMode ? 210 + Math.random() * 30 : 240 + Math.random() * 20 - 10; // More blue range for dark mode
+    this.color = `hsla(${hue}, 85%, ${isDarkMode ? '70%' : '65%'}, ${this.opacity})`;
   }
 
   update() {
@@ -225,8 +231,8 @@ class Particle {
       this.x, this.y, 0,
       this.x, this.y, this.radius * 3
     );
-    gradient.addColorStop(0, `hsla(240, 85%, 65%, ${this.opacity * 0.3})`);
-    gradient.addColorStop(1, `hsla(240, 85%, 65%, 0)`);
+    gradient.addColorStop(0, this.color);
+    gradient.addColorStop(1, `hsla(210, 85%, 70%, 0)`);
     
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius * 3, 0, Math.PI * 2);
@@ -237,9 +243,37 @@ class Particle {
 
 export default function PerfectFit() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particleNetworkRef = useRef<ParticleNetwork | null>(null);
+
+  // Check for dark mode
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark')
+      setIsDarkMode(isDark)
+    }
+
+    checkDarkMode()
+
+    const themeObserver = new MutationObserver(checkDarkMode)
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+
+    return () => themeObserver.disconnect()
+  }, [])
+
+  // Reinitialize particle network when dark mode changes
+  useEffect(() => {
+    if (particleNetworkRef.current && canvasRef.current) {
+      particleNetworkRef.current.cleanup();
+      particleNetworkRef.current = new ParticleNetwork(canvasRef.current, isDarkMode);
+      particleNetworkRef.current.start();
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -248,7 +282,7 @@ export default function PerfectFit() {
           if (entry.isIntersecting) {
             // Initialize particle network when section enters viewport
             if (canvasRef.current && !particleNetworkRef.current) {
-              particleNetworkRef.current = new ParticleNetwork(canvasRef.current);
+              particleNetworkRef.current = new ParticleNetwork(canvasRef.current, isDarkMode);
               particleNetworkRef.current.start();
             }
           } else if (particleNetworkRef.current) {
@@ -258,8 +292,8 @@ export default function PerfectFit() {
         });
       },
       {
-        threshold: 0.1, // Trigger when 10% of section is visible
-        rootMargin: '50px' // Start loading slightly before entering viewport
+        threshold: 0.1,
+        rootMargin: '50px'
       }
     );
 
@@ -277,12 +311,16 @@ export default function PerfectFit() {
         particleNetworkRef.current = null;
       }
     };
-  }, []);
+  }, [isDarkMode]);
 
   return (
     <section 
       ref={sectionRef} 
-      className="py-20 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden"
+      className={`py-20 transition-colors duration-300 relative overflow-hidden ${
+        isDarkMode 
+          ? 'bg-gradient-to-b from-slate-900 to-slate-800' 
+          : 'bg-gradient-to-b from-slate-50 to-white'
+      }`}
     >
       {/* Particle Canvas Background */}
       <canvas
@@ -294,10 +332,14 @@ export default function PerfectFit() {
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Section Title */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
+            isDarkMode ? 'text-white' : 'text-slate-900'
+          }`}>
             Is This For You?
           </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
+            isDarkMode ? 'text-slate-400' : 'text-slate-600'
+          }`}>
             Clear expectations lead to successful partnerships
           </p>
         </div>
@@ -306,14 +348,20 @@ export default function PerfectFit() {
           {/* Left Column - Perfect For */}
           <div className="space-y-8">
             <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full font-semibold mb-4">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold mb-4 transition-colors duration-300 ${
+                isDarkMode ? 'bg-emerald-900/50 text-emerald-400' : 'bg-emerald-50 text-emerald-700'
+              }`}>
                 <CheckCircle className="w-5 h-5" />
                 <span>We're Perfect For:</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+              <h3 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
                 Clients Who Value Quality & Partnership
               </h3>
-              <p className="text-slate-600">
+              <p className={`transition-colors duration-300 ${
+                isDarkMode ? 'text-slate-400' : 'text-slate-600'
+              }`}>
                 You're looking for more than just code - you want a reliable partner
               </p>
             </div>
@@ -353,32 +401,48 @@ export default function PerfectFit() {
               ].map((item, index) => (
                 <div 
                   key={index}
-                  className="group p-5 bg-white/80 backdrop-blur-sm border border-emerald-100 rounded-xl hover:border-emerald-200 hover:shadow-md transition-all duration-300"
+                  className={`group p-5 backdrop-blur-sm border rounded-xl hover:shadow-md transition-all duration-300 ${
+                    isDarkMode
+                      ? 'bg-slate-800/80 border-emerald-800/50 hover:border-emerald-700 hover:shadow-slate-900/50'
+                      : 'bg-white/80 border-emerald-100 hover:border-emerald-200'
+                  }`}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                      <item.icon className="w-6 h-6 text-emerald-600" />
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 ${
+                      isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'
+                    }`}>
+                      <item.icon className={`w-6 h-6 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-slate-900 mb-1">
+                      <h4 className={`font-bold mb-1 transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-slate-900'
+                      }`}>
                         {item.title}
                       </h4>
-                      <p className="text-slate-700 mb-3">
+                      <p className={`mb-3 transition-colors duration-300 ${
+                        isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                      }`}>
                         {item.description}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {item.details.map((detail, idx) => (
                           <span
                             key={idx}
-                            className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium"
+                            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${
+                              isDarkMode
+                                ? 'bg-emerald-900/50 text-emerald-400'
+                                : 'bg-emerald-50 text-emerald-700'
+                            }`}
                           >
                             {detail}
                           </span>
                         ))}
                       </div>
                     </div>
-                    <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'
+                    }`}>
+                      <CheckCircle className={`w-4 h-4 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
                     </div>
                   </div>
                 </div>
@@ -389,14 +453,20 @@ export default function PerfectFit() {
           {/* Right Column - Not a Good Fit */}
           <div className="space-y-8">
             <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-700 rounded-full font-semibold mb-4">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold mb-4 transition-colors duration-300 ${
+                isDarkMode ? 'bg-rose-900/50 text-rose-400' : 'bg-rose-50 text-rose-700'
+              }`}>
                 <X className="w-5 h-5" />
                 <span>We're NOT a Good Fit For:</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+              <h3 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
                 Projects That Don't Align With Our Values
               </h3>
-              <p className="text-slate-600">
+              <p className={`transition-colors duration-300 ${
+                isDarkMode ? 'text-slate-400' : 'text-slate-600'
+              }`}>
                 Setting clear boundaries ensures we deliver our best work
               </p>
             </div>
@@ -430,32 +500,48 @@ export default function PerfectFit() {
               ].map((item, index) => (
                 <div 
                   key={index}
-                  className="group p-5 bg-white/80 backdrop-blur-sm border border-rose-100 rounded-xl hover:border-rose-200 hover:shadow-md transition-all duration-300"
+                  className={`group p-5 backdrop-blur-sm border rounded-xl hover:shadow-md transition-all duration-300 ${
+                    isDarkMode
+                      ? 'bg-slate-800/80 border-rose-800/50 hover:border-rose-700 hover:shadow-slate-900/50'
+                      : 'bg-white/80 border-rose-100 hover:border-rose-200'
+                  }`}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                      <item.icon className="w-6 h-6 text-rose-600" />
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 ${
+                      isDarkMode ? 'bg-rose-900/50' : 'bg-rose-100'
+                    }`}>
+                      <item.icon className={`w-6 h-6 ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`} />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-slate-900 mb-1">
+                      <h4 className={`font-bold mb-1 transition-colors duration-300 ${
+                        isDarkMode ? 'text-white' : 'text-slate-900'
+                      }`}>
                         {item.title}
                       </h4>
-                      <p className="text-slate-700 mb-3">
+                      <p className={`mb-3 transition-colors duration-300 ${
+                        isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                      }`}>
                         {item.description}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {item.reasons.map((reason, idx) => (
                           <span
                             key={idx}
-                            className="px-3 py-1 bg-rose-50 text-rose-700 rounded-full text-xs font-medium"
+                            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${
+                              isDarkMode
+                                ? 'bg-rose-900/50 text-rose-400'
+                                : 'bg-rose-50 text-rose-700'
+                            }`}
                           >
                             {reason}
                           </span>
                         ))}
                       </div>
                     </div>
-                    <div className="w-6 h-6 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <X className="w-4 h-4 text-rose-600" />
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      isDarkMode ? 'bg-rose-900/50' : 'bg-rose-100'
+                    }`}>
+                      <X className={`w-4 h-4 ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`} />
                     </div>
                   </div>
                 </div>
@@ -465,19 +551,29 @@ export default function PerfectFit() {
         </div>
 
         {/* Philosophy Statement */}
-        <div className="bg-gradient-to-r from-blue-50/90 to-blue-100/90 backdrop-blur-sm border border-blue-200 rounded-2xl p-8 md:p-10">
+        <div className={`backdrop-blur-sm border rounded-2xl p-8 md:p-10 transition-colors duration-300 ${
+          isDarkMode
+            ? 'bg-gradient-to-r from-blue-900/50 to-blue-800/50 border-blue-800'
+            : 'bg-gradient-to-r from-blue-50/90 to-blue-100/90 border-blue-200'
+        }`}>
           <div className="flex flex-col lg:flex-row items-center gap-8">
             <div className="lg:w-1/4">
-              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto lg:mx-0">
-                <HeartHandshake className="w-8 h-8 text-blue-600" />
+              <div className={`w-16 h-16 rounded-xl flex items-center justify-center mx-auto lg:mx-0 transition-colors duration-300 ${
+                isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
+              }`}>
+                <HeartHandshake className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
               </div>
             </div>
             
             <div className="lg:w-2/4 text-center lg:text-left">
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
+              <h3 className={`text-xl font-bold mb-3 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
                 Quality & Long-Term Partnerships
               </h3>
-              <p className="text-slate-700 mb-6">
+              <p className={`mb-6 transition-colors duration-300 ${
+                isDarkMode ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 We work with clients who value craftsmanship, clear communication, 
                 and sustainable solutions. Our best work happens when we partner with 
                 businesses that understand software is an investment, not just an expense.
@@ -485,15 +581,21 @@ export default function PerfectFit() {
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-sm text-slate-700">Clear communication</span>
+                  <span className={`text-sm transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                  }`}>Clear communication</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-sm text-slate-700">Realistic timelines</span>
+                  <span className={`text-sm transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                  }`}>Realistic timelines</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  <span className="text-sm text-slate-700">Transparent pricing</span>
+                  <span className={`text-sm transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                  }`}>Transparent pricing</span>
                 </div>
               </div>
             </div>
@@ -506,22 +608,28 @@ export default function PerfectFit() {
                 <span>Start a Conversation</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-
-             
             </div>
           </div>
         </div>
 
         {/* Self-Assessment Questions */}
-        <div className="mt-12 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">
+        <div className={`mt-12 backdrop-blur-sm border rounded-2xl p-8 transition-colors duration-300 ${
+          isDarkMode
+            ? 'bg-slate-800/80 border-slate-700'
+            : 'bg-white/80 border-slate-200'
+        }`}>
+          <h3 className={`text-2xl font-bold mb-6 text-center transition-colors duration-300 ${
+            isDarkMode ? 'text-white' : 'text-slate-900'
+          }`}>
             Still Unsure If We're a Good Fit?
           </h3>
         
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
+              <h4 className={`font-bold mb-3 flex items-center gap-2 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
+                <CheckCircle className={`w-5 h-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-500'}`} />
                 Answer YES if:
               </h4>
               <ul className="space-y-3">
@@ -533,18 +641,24 @@ export default function PerfectFit() {
                   "You appreciate transparent communication"
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-emerald-600 text-sm font-bold">✓</span>
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors duration-300 ${
+                      isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'
+                    }`}>
+                      <span className={`text-sm font-bold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>✓</span>
                     </div>
-                    <span className="text-slate-700">{item}</span>
+                    <span className={`transition-colors duration-300 ${
+                      isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                    }`}>{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
-                <X className="w-5 h-5 text-rose-500" />
+              <h4 className={`font-bold mb-3 flex items-center gap-2 transition-colors duration-300 ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
+                <X className={`w-5 h-5 ${isDarkMode ? 'text-rose-400' : 'text-rose-500'}`} />
                 Answer NO if:
               </h4>
               <ul className="space-y-3">
@@ -556,23 +670,35 @@ export default function PerfectFit() {
                   "You want ongoing free support"
                 ].map((item, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-rose-600 text-sm font-bold">✗</span>
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors duration-300 ${
+                      isDarkMode ? 'bg-rose-900/50' : 'bg-rose-100'
+                    }`}>
+                      <span className={`text-sm font-bold ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`}>✗</span>
                     </div>
-                    <span className="text-slate-700">{item}</span>
+                    <span className={`transition-colors duration-300 ${
+                      isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                    }`}>{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-slate-200 text-center">
-            <p className="text-slate-600 mb-4">
+          <div className={`mt-8 pt-8 border-t text-center transition-colors duration-300 ${
+            isDarkMode ? 'border-slate-700' : 'border-slate-200'
+          }`}>
+            <p className={`mb-4 transition-colors duration-300 ${
+              isDarkMode ? 'text-slate-300' : 'text-slate-600'
+            }`}>
               If you answered mostly YES, we should talk. If mostly NO, we might not be the right fit.
             </p>
             <button 
               onClick={() => setIsContactModalOpen(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors duration-300"
+              className={`inline-flex items-center gap-2 px-6 py-3 border-2 font-semibold rounded-lg transition-colors duration-300 ${
+                isDarkMode
+                  ? 'border-blue-500 text-blue-400 hover:bg-blue-900/30'
+                  : 'border-blue-600 text-blue-600 hover:bg-blue-50'
+              }`}
             >
               <span>Still Have Questions?</span>
               <ArrowRight className="w-5 h-5" />
@@ -581,14 +707,12 @@ export default function PerfectFit() {
         </div>
       </div>
 
-
-            {/* Contact Modal */}
-              <ContactModal 
-                isOpen={isContactModalOpen}
-                onClose={() => setIsContactModalOpen(false)}
-              />
-
-
+      {/* Contact Modal */}
+      <ContactModal 
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        isDarkMode={isDarkMode}
+      />
     </section>
   )
-}
+} 

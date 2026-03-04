@@ -3,11 +3,18 @@
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: process.env.SMTP_HOST,
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
+  tls: {
+    rejectUnauthorized: false  // ← this fixes the certificate error
+  },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
 });
 
 export async function sendEmailAction(data: any, type: 'inquiry' | 'consultation') {
@@ -35,15 +42,21 @@ export async function sendEmailAction(data: any, type: 'inquiry' | 'consultation
     `;
 
   try {
+    // Test connection first
+    await transporter.verify()
+    console.log('SMTP connection verified ✅')
+
     await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: process.env.GMAIL_USER, // Send to yourself
+      from: `"PapaTiger" <${process.env.SMTP_USER}>`,
+      to: process.env.SMTP_USER,
+      replyTo: data.email,
       subject: subject,
       html: htmlContent,
     });
+
     return { success: true };
-  } catch (error) {
-    console.error("Email Error:", error);
-    return { success: false };
+  } catch (error: any) {
+    console.error("Email Error:", error.message);
+    return { success: false, error: error.message };
   }
 }

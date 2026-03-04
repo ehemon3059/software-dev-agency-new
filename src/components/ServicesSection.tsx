@@ -13,7 +13,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 
 // Animated geometric grid background
-function GeometricGrid() {
+function GeometricGrid({ isDarkMode }: { isDarkMode: boolean }) {
   const canvasRef = useRef(null)
   const animationRef = useRef<number | null>(null)
   const timeRef = useRef(0)
@@ -53,13 +53,17 @@ function GeometricGrid() {
       
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+      // Use different colors for dark mode
+      const dotColor = isDarkMode ? '96, 165, 250' : '59, 130, 246' // blue-400 for dark, blue-500 for light
+      const lineColor = isDarkMode ? '96, 165, 250' : '59, 130, 246'
+
       // Draw dots with floating animation
       dots.forEach((dot) => {
         const offsetX = Math.sin(timeRef.current + dot.phase) * 3
         const offsetY = Math.cos(timeRef.current * 0.8 + dot.phase) * 3
         const opacity = 0.15 + Math.sin(timeRef.current * 0.5 + dot.phase) * 0.1
 
-        ctx.fillStyle = `rgba(59, 130, 246, ${opacity})`
+        ctx.fillStyle = `rgba(${dotColor}, ${opacity})`
         ctx.beginPath()
         ctx.arc(dot.baseX + offsetX, dot.baseY + offsetY, 2, 0, Math.PI * 2)
         ctx.fill()
@@ -75,7 +79,7 @@ function GeometricGrid() {
           if (distance < gridSize * 1.5) {
             const opacity = (0.08 * (1 - distance / (gridSize * 1.5))) * 
                           (1 + Math.sin(timeRef.current * 0.3) * 0.3)
-            ctx.strokeStyle = `rgba(59, 130, 246, ${opacity})`
+            ctx.strokeStyle = `rgba(${lineColor}, ${opacity})`
             ctx.lineWidth = 1
             ctx.beginPath()
             
@@ -102,7 +106,7 @@ function GeometricGrid() {
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [])
+  }, [isDarkMode])
 
   return (
     <canvas
@@ -114,6 +118,7 @@ function GeometricGrid() {
 
 export default function ServicesSection() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const sectionRef = useRef(null)
 
   useEffect(() => {
@@ -133,10 +138,27 @@ export default function ServicesSection() {
       observer.observe(sectionRef.current)
     }
 
+    // Check for dark mode on mount and when it changes
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark')
+      setIsDarkMode(isDark)
+    }
+
+    // Initial check
+    checkDarkMode()
+
+    // Create an observer to watch for class changes on html element
+    const themeObserver = new MutationObserver(checkDarkMode)
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+
     return () => {
       if (sectionRef.current) {
         observer.unobserve(sectionRef.current)
       }
+      themeObserver.disconnect()
     }
   }, [])
 
@@ -195,19 +217,25 @@ export default function ServicesSection() {
   return (
     <section 
       ref={sectionRef}
-      className="py-20 bg-gray-50 relative overflow-hidden" 
+      className={`py-20 transition-colors duration-300 relative overflow-hidden ${
+        isDarkMode ? 'bg-slate-900' : 'bg-gray-50'
+      }`} 
       id="services"
     >
       {/* Animated geometric grid background */}
-      {isVisible && <GeometricGrid />}
+      {isVisible && <GeometricGrid isDarkMode={isDarkMode} />}
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Section Title */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
+            isDarkMode ? 'text-white' : 'text-gray-900'
+          }`}>
             What We Do Best
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
+            isDarkMode ? 'text-slate-400' : 'text-gray-600'
+          }`}>
             Professional software solutions tailored to your business needs
           </p>
         </div>
@@ -217,30 +245,44 @@ export default function ServicesSection() {
           {primaryServices.map((service, index) => (
             <div 
               key={index}
-              className="bg-white border border-gray-200 rounded-xl p-8 hover:shadow-lg transition-all duration-300 hover:border-gray-300"
+              className={`rounded-xl p-8 transition-all duration-300 ${
+                isDarkMode
+                  ? 'bg-slate-800 border border-slate-700 hover:border-slate-600 hover:shadow-lg hover:shadow-slate-900/50'
+                  : 'bg-white border border-gray-200 hover:shadow-lg hover:border-gray-300'
+              }`}
             >
               {/* Icon and Title */}
               <div className="flex items-start gap-4 mb-6">
-                <div className={`w-14 h-14 ${getColorClass(service.color).bg} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                  <service.icon className={`w-7 h-7 ${getColorClass(service.color).text}`} />
+                <div className={`w-14 h-14 ${getColorClass(service.color, isDarkMode).bg} rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-300`}>
+                  <service.icon className={`w-7 h-7 ${getColorClass(service.color, isDarkMode).text}`} />
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                  <h3 className={`text-xl md:text-2xl font-bold mb-2 transition-colors duration-300 ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {service.title}
                   </h3>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors duration-300 ${
+                    isDarkMode
+                      ? 'bg-slate-700 text-slate-300'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
                     <Zap className="w-4 h-4" />
                     <span>Primary Service</span>
                   </div>
                 </div>
               </div>
 
-              {/* Tech Stack Tags - Moved up */}
+              {/* Tech Stack Tags */}
               <div className="flex flex-wrap gap-2 mb-6">
                 {service.techStack.map((tech, idx) => (
                   <span 
                     key={idx}
-                    className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium"
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-300 ${
+                      isDarkMode
+                        ? 'bg-slate-700 text-slate-300'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}
                   >
                     {tech}
                   </span>
@@ -249,27 +291,43 @@ export default function ServicesSection() {
 
               {/* What You Get */}
               <div className="mb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                <h4 className={`text-lg font-semibold mb-3 transition-colors duration-300 ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   What You Get:
                 </h4>
                 <ul className="space-y-3">
                   {service.bulletPoints.map((point, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">{point}</span>
+                      <CheckCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 transition-colors duration-300 ${
+                        isDarkMode ? 'text-green-400' : 'text-green-500'
+                      }`} />
+                      <span className={`transition-colors duration-300 ${
+                        isDarkMode ? 'text-slate-300' : 'text-gray-700'
+                      }`}>{point}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Outcome and Timeline */}
-              <div className="pt-6 border-t border-gray-200">
-                <p className="text-gray-800 mb-4">
+              <div className={`pt-6 border-t transition-colors duration-300 ${
+                isDarkMode ? 'border-slate-700' : 'border-gray-200'
+              }`}>
+                <p className={`mb-4 transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-300' : 'text-gray-800'
+                }`}>
                   <strong className="font-semibold">Outcome:</strong> {service.outcome}
                 </p>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-                  <Clock className="w-4 h-4 text-gray-600" />
-                  <span className="font-medium text-gray-700">
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-300 ${
+                  isDarkMode ? 'bg-slate-700' : 'bg-gray-100'
+                }`}>
+                  <Clock className={`w-4 h-4 transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                  }`} />
+                  <span className={`font-medium transition-colors duration-300 ${
+                    isDarkMode ? 'text-slate-300' : 'text-gray-700'
+                  }`}>
                     Timeline: {service.timeline}
                   </span>
                 </div>
@@ -281,10 +339,14 @@ export default function ServicesSection() {
         {/* Secondary Services */}
         <div className="mb-16">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+            <h3 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
               We Also Provide
             </h3>
-            <p className="text-gray-600">
+            <p className={`transition-colors duration-300 ${
+              isDarkMode ? 'text-slate-400' : 'text-gray-600'
+            }`}>
               Additional specialized services to complement your project
             </p>
           </div>
@@ -293,15 +355,23 @@ export default function ServicesSection() {
             {secondaryServices.map((service, index) => (
               <div 
                 key={index} 
-                className="group p-6 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all duration-300"
+                className={`group p-6 rounded-xl transition-all duration-300 ${
+                  isDarkMode
+                    ? 'bg-slate-800 border border-slate-700 hover:border-slate-600 hover:shadow-md hover:shadow-slate-900/50'
+                    : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md'
+                }`}
               >
-                <div className={`w-12 h-12 ${getColorClass(service.color).bg} rounded-lg flex items-center justify-center mb-4`}>
-                  <service.icon className={`w-6 h-6 ${getColorClass(service.color).text}`} />
+                <div className={`w-12 h-12 ${getColorClass(service.color, isDarkMode).bg} rounded-lg flex items-center justify-center mb-4 transition-colors duration-300`}>
+                  <service.icon className={`w-6 h-6 ${getColorClass(service.color, isDarkMode).text}`} />
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                <h4 className={`text-lg font-semibold mb-2 transition-colors duration-300 ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
                   {service.title}
                 </h4>
-                <p className="text-gray-600">
+                <p className={`transition-colors duration-300 ${
+                  isDarkMode ? 'text-slate-400' : 'text-gray-600'
+                }`}>
                   {service.description}
                 </p>
               </div>
@@ -311,11 +381,21 @@ export default function ServicesSection() {
 
         {/* Bottom Statement */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-3 px-6 py-4 bg-white border border-gray-200 rounded-xl">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Zap className="w-6 h-6 text-blue-600" />
+          <div className={`inline-flex items-center gap-3 px-6 py-4 rounded-xl transition-colors duration-300 ${
+            isDarkMode
+              ? 'bg-slate-800 border border-slate-700'
+              : 'bg-white border border-gray-200'
+          }`}>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+              isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
+            }`}>
+              <Zap className={`w-6 h-6 transition-colors duration-300 ${
+                isDarkMode ? 'text-blue-400' : 'text-blue-600'
+              }`} />
             </div>
-            <p className="text-lg text-gray-700">
+            <p className={`text-lg transition-colors duration-300 ${
+              isDarkMode ? 'text-slate-300' : 'text-gray-700'
+            }`}>
               <strong className="font-semibold">We don't just write code</strong> — we solve business problems with software.
             </p>
           </div>
@@ -325,18 +405,33 @@ export default function ServicesSection() {
   )
 }
 
-// Helper function for color classes
-function getColorClass(color:string) {
-  switch (color) {
-    case 'blue':
-      return { bg: 'bg-blue-100', text: 'text-blue-600' }
-    case 'green':
-      return { bg: 'bg-green-100', text: 'text-green-600' }
-    case 'purple':
-      return { bg: 'bg-purple-100', text: 'text-purple-600' }
-    case 'amber':
-      return { bg: 'bg-amber-100', text: 'text-amber-600' }
-    default:
-      return { bg: 'bg-gray-100', text: 'text-gray-600' }
+// Helper function for color classes with dark mode support
+function getColorClass(color: string, isDarkMode: boolean) {
+  if (isDarkMode) {
+    switch (color) {
+      case 'blue':
+        return { bg: 'bg-blue-900/50', text: 'text-blue-400' }
+      case 'green':
+        return { bg: 'bg-green-900/50', text: 'text-green-400' }
+      case 'purple':
+        return { bg: 'bg-purple-900/50', text: 'text-purple-400' }
+      case 'amber':
+        return { bg: 'bg-amber-900/50', text: 'text-amber-400' }
+      default:
+        return { bg: 'bg-slate-700', text: 'text-slate-300' }
+    }
+  } else {
+    switch (color) {
+      case 'blue':
+        return { bg: 'bg-blue-100', text: 'text-blue-600' }
+      case 'green':
+        return { bg: 'bg-green-100', text: 'text-green-600' }
+      case 'purple':
+        return { bg: 'bg-purple-100', text: 'text-purple-600' }
+      case 'amber':
+        return { bg: 'bg-amber-100', text: 'text-amber-600' }
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-600' }
+    }
   }
 }
