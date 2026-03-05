@@ -27,18 +27,37 @@ export async function sendEmailAction(data: any, type: 'inquiry' | 'consultation
       <p><strong>Notes:</strong> ${data.additionalNotes || 'None'}</p>
     `;
 
-  try {
-    await resend.emails.send({
-      from: 'PapaTiger <hello@papatiger.tech>',
-      to: 'hello@papatiger.tech',
-      replyTo: data.email,
-      subject: subject,
-      html: htmlContent,
-    });
+  // try {
+  //   await resend.emails.send({
+  //     from: 'PapaTiger <hello@papatiger.tech>',
+  //     to: 'hello@papatiger.tech',
+  //     replyTo: data.email,
+  //     subject: subject,
+  //     html: htmlContent,
+  //   });
 
-    return { success: true };
-  } catch (error: any) {
-    console.error("Email Error:", error.message);
-    return { success: false, error: error.message };
-  }
+  //   return { success: true };
+  // } catch (error: any) {
+  //   console.error("Email Error:", error.message);
+  //   return { success: false, error: error.message };
+  // }
+
+  try {
+  console.log('Attempting to send with Resend...')
+  console.log('API Key exists:', !!process.env.RESEND_API_KEY)
+  
+  await resend.emails.send({
+    from: 'PapaTiger <hello@papatiger.tech>',
+    to: 'hello@papatiger.tech',
+    replyTo: data.email,
+    subject: subject,
+    html: htmlContent,
+  });
+
+  console.log('Email sent successfully!')
+  return { success: true };
+} catch (error: any) {
+  console.error("Email Error:", error.message);
+  return { success: false, error: error.message };
+}
 }
