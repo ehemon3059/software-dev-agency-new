@@ -48,7 +48,7 @@ export async function sendEmailAction(data: any, type: 'inquiry' | 'consultation
   
   await resend.emails.send({
     from: 'PapaTiger <hello@papatiger.tech>',
-    to: 'hello@papatiger.tech',
+    to: 'no.one3059@gmail.com',
     replyTo: data.email,
     subject: subject,
     html: htmlContent,
