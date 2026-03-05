@@ -1,7 +1,4 @@
 'use server';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendEmailAction(data: any, type: 'inquiry' | 'consultation') {
   const subject = type === 'inquiry'
@@ -27,37 +24,33 @@ export async function sendEmailAction(data: any, type: 'inquiry' | 'consultation
       <p><strong>Notes:</strong> ${data.additionalNotes || 'None'}</p>
     `;
 
-  // try {
-  //   await resend.emails.send({
-  //     from: 'PapaTiger <hello@papatiger.tech>',
-  //     to: 'hello@papatiger.tech',
-  //     replyTo: data.email,
-  //     subject: subject,
-  //     html: htmlContent,
-  //   });
-
-  //   return { success: true };
-  // } catch (error: any) {
-  //   console.error("Email Error:", error.message);
-  //   return { success: false, error: error.message };
-  // }
-
   try {
-  console.log('Attempting to send with Resend...')
-  console.log('API Key exists:', !!process.env.RESEND_API_KEY)
-  
-  await resend.emails.send({
-    from: 'PapaTiger <hello@papatiger.tech>',
-    to: 'no.one3059@gmail.com',
-    replyTo: data.email,
-    subject: subject,
-    html: htmlContent,
-  });
+    console.log('Attempting to send via PHP API...')
 
-  console.log('Email sent successfully!')
-  return { success: true };
-} catch (error: any) {
-  console.error("Email Error:", error.message);
-  return { success: false, error: error.message };
-}
+    const response = await fetch('https://api.papatiger.tech/send-mail.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: 'papatiger2024secret',
+        subject,
+        html: htmlContent,
+        replyTo: data.email
+      })
+    });
+
+    const result = await response.json();
+    console.log('PHP API response:', result)
+
+    if (result.success) {
+      console.log('Email sent successfully!')
+      return { success: true };
+    } else {
+      console.error('PHP API error:', result.error)
+      return { success: false, error: result.error };
+    }
+
+  } catch (error: any) {
+    console.error("Email Error:", error.message);
+    return { success: false, error: error.message };
+  }
 }
