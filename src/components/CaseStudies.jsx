@@ -1,83 +1,6 @@
-import { useState, useEffect, useRef, CSSProperties, RefObject } from "react";
+import { useState, useEffect, useRef } from "react";
 
-// ============================================================
-// TYPE DEFINITIONS
-// ============================================================
-
-interface PainPointData {
-  label: string;
-  desc: string;
-}
-
-interface PainData {
-  intro: string;
-  points: PainPointData[];
-}
-
-interface SolutionData {
-  label: string;
-  desc: string;
-}
-
-interface TechData {
-  layer: string;
-  tech: string;
-  why: string;
-}
-
-interface BeforeAfterData {
-  area: string;
-  before: string;
-  after: string;
-}
-
-interface ProcessData {
-  phase: string;
-  title: string;
-  desc: string;
-}
-
-interface ResultData {
-  metric: string;
-  value: string;
-  impact: string;
-}
-
-interface TestimonialData {
-  quote: string;
-  author: string;
-  role: string;
-}
-
-interface CaseStudy {
-  id: string;
-  label: string;
-  title: string;
-  tagline: string;
-  status: string;
-  statusColor: string;
-  timeline: string;
-  teamSize: string;
-  clientType: string;
-  industry: string;
-  investment: string;
-  overview: string;
-  pain: PainData;
-  solution: SolutionData[];
-  keyDecision: string;
-  tech: TechData[];
-  beforeAfter: BeforeAfterData[];
-  process: ProcessData[];
-  results: ResultData[];
-  testimonial: TestimonialData;
-  techTags: string[];
-}
-
-// ============================================================
-// DATA
-// ============================================================
-
-const caseStudies: CaseStudy[] = [
+const caseStudies = [
   {
     id: "portfolio-builder",
     label: "CASE STUDY 01",
@@ -344,17 +267,14 @@ const caseStudies: CaseStudy[] = [
   },
 ];
 
-// ============================================================
-// HOOKS
-// ============================================================
-
-function useCountUp(end: string, duration: number = 1500, start: boolean = false): number {
-  const [val, setVal] = useState<number>(0);
+// ---- Animated counter hook ----
+function useCountUp(end, duration = 1500, start = false) {
+  const [val, setVal] = useState(0);
   useEffect(() => {
     if (!start) return;
-    let startTime: number | null = null;
+    let startTime = null;
     const numEnd = parseInt(String(end).replace(/[^0-9]/g, "")) || 0;
-    function step(ts: number) {
+    function step(ts) {
       if (!startTime) startTime = ts;
       const p = Math.min((ts - startTime) / duration, 1);
       setVal(Math.floor(p * numEnd));
@@ -365,34 +285,23 @@ function useCountUp(end: string, duration: number = 1500, start: boolean = false
   return val;
 }
 
-function useInView(threshold: number = 0.15): [RefObject<HTMLDivElement | null>, boolean] {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [inView, setInView] = useState<boolean>(false);
+// ---- Intersection Observer hook ----
+function useInView(threshold = 0.15) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) setInView(true);
-      },
-      { threshold }
-    );
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold });
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
   return [ref, inView];
 }
 
-// ============================================================
-// SUB-COMPONENTS
-// ============================================================
+// ---- Sub-components ----
 
-interface ResultCardProps extends ResultData {
-  delay: number;
-  animate: boolean;
-}
-
-function ResultCard({ metric, value, impact, delay, animate }: ResultCardProps) {
+function ResultCard({ metric, value, impact, delay, animate }) {
   const numVal = useCountUp(value, 1200, animate);
   const suffix = String(value).replace(/[0-9]/g, "");
   const hasNum = /[0-9]/.test(value);
@@ -418,7 +327,7 @@ function ResultCard({ metric, value, impact, delay, animate }: ResultCardProps) 
   );
 }
 
-function TechTag({ name }: { name: string }) {
+function TechTag({ name }) {
   return (
     <span
       style={{
@@ -440,7 +349,7 @@ function TechTag({ name }: { name: string }) {
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }) {
   return (
     <div
       style={{
@@ -448,7 +357,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
         fontSize: 11,
         fontWeight: 700,
         letterSpacing: 2.5,
-        textTransform: "uppercase" as const,
+        textTransform: "uppercase",
         color: "#3b82f6",
         marginBottom: 10,
         fontFamily: "'Space Mono', monospace",
@@ -459,16 +368,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionTitle({ children }) {
   return <h3 style={{ fontSize: 26, fontWeight: 800, color: "#f1f5f9", margin: "0 0 20px", lineHeight: 1.3 }}>{children}</h3>;
 }
 
-interface PainPointProps extends PainPointData {
-  index: number;
-  animate: boolean;
-}
-
-function PainPoint({ label, desc, index, animate }: PainPointProps) {
+function PainPoint({ label, desc, index, animate }) {
   return (
     <div
       style={{
@@ -495,12 +399,7 @@ function PainPoint({ label, desc, index, animate }: PainPointProps) {
   );
 }
 
-interface SolutionPointProps extends SolutionData {
-  index: number;
-  animate: boolean;
-}
-
-function SolutionPoint({ label, desc, index, animate }: SolutionPointProps) {
+function SolutionPoint({ label, desc, index, animate }) {
   return (
     <div
       style={{
@@ -527,13 +426,7 @@ function SolutionPoint({ label, desc, index, animate }: SolutionPointProps) {
   );
 }
 
-interface ProcessStepProps extends ProcessData {
-  index: number;
-  total: number;
-  animate: boolean;
-}
-
-function ProcessStep({ phase, title, desc, index, total, animate }: ProcessStepProps) {
+function ProcessStep({ phase, title, desc, index, total, animate }) {
   return (
     <div
       style={{
@@ -544,7 +437,7 @@ function ProcessStep({ phase, title, desc, index, total, animate }: ProcessStepP
         transition: `all 0.5s cubic-bezier(.22,1,.36,1) ${index * 120 + 200}ms`,
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", minWidth: 48 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 48 }}>
         <div
           style={{
             width: 40,
@@ -574,12 +467,7 @@ function ProcessStep({ phase, title, desc, index, total, animate }: ProcessStepP
   );
 }
 
-interface BeforeAfterRowProps extends BeforeAfterData {
-  index: number;
-  animate: boolean;
-}
-
-function BeforeAfterRow({ area, before, after, index, animate }: BeforeAfterRowProps) {
+function BeforeAfterRow({ area, before, after, index, animate }) {
   return (
     <div
       style={{
@@ -602,11 +490,7 @@ function BeforeAfterRow({ area, before, after, index, animate }: BeforeAfterRowP
   );
 }
 
-// ============================================================
-// CASE STUDY DETAIL PAGE
-// ============================================================
-
-function CaseStudyPage({ study }: { study: CaseStudy }) {
+function CaseStudyPage({ study }) {
   const [heroRef, heroInView] = useInView(0.1);
   const [painRef, painInView] = useInView();
   const [solRef, solInView] = useInView();
@@ -628,7 +512,7 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
           transition: "all 0.8s cubic-bezier(.22,1,.36,1)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" as const }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, color: "#60a5fa", fontFamily: "'Space Mono', monospace" }}>{study.label}</span>
           <span
             style={{
@@ -649,12 +533,12 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
 
         {/* Meta cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
-          {([
+          {[
             { label: "Timeline", value: study.timeline },
             { label: "Team", value: study.teamSize },
             { label: "Type", value: study.clientType },
             { label: "Investment", value: study.investment },
-          ] as const).map((m) => (
+          ].map((m) => (
             <div
               key={m.label}
               style={{
@@ -664,13 +548,14 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
                 borderRadius: 12,
               }}
             >
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, color: "#64748b", textTransform: "uppercase" as const, marginBottom: 6, fontFamily: "'Space Mono', monospace" }}>{m.label}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, color: "#64748b", textTransform: "uppercase", marginBottom: 6, fontFamily: "'Space Mono', monospace" }}>{m.label}</div>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{m.value}</div>
             </div>
           ))}
         </div>
       </div>
 
+      {/* Divider */}
       <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent)", margin: "10px 0 50px" }} />
 
       {/* Overview */}
@@ -716,7 +601,7 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
       <div ref={techRef} style={{ marginBottom: 60 }}>
         <SectionLabel>Technology Stack</SectionLabel>
         <SectionTitle>Built With Purpose</SectionTitle>
-        <div style={{ display: "flex", flexWrap: "wrap" as const, marginBottom: 24 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", marginBottom: 24 }}>
           {study.techTags.map((t) => (
             <TechTag key={t} name={t} />
           ))}
@@ -731,9 +616,10 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
             transition: "all 0.6s cubic-bezier(.22,1,.36,1) 200ms",
           }}
         >
+          {/* Header */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1.3fr 1.7fr", background: "rgba(255,255,255,0.06)" }}>
             {["Layer", "Technology", "Why We Chose It"].map((h) => (
-              <div key={h} style={{ padding: "14px 18px", fontSize: 12, fontWeight: 700, color: "#64748b", letterSpacing: 1, textTransform: "uppercase" as const, fontFamily: "'Space Mono', monospace" }}>{h}</div>
+              <div key={h} style={{ padding: "14px 18px", fontSize: 12, fontWeight: 700, color: "#64748b", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Space Mono', monospace" }}>{h}</div>
             ))}
           </div>
           {study.tech.map((t, i) => (
@@ -752,9 +638,9 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
         <SectionTitle>The Transformation</SectionTitle>
         <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "rgba(255,255,255,0.06)" }}>
-            <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 700, color: "#64748b", letterSpacing: 1, textTransform: "uppercase" as const, fontFamily: "'Space Mono', monospace" }}>Area</div>
-            <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 700, color: "#ef4444", letterSpacing: 1, textTransform: "uppercase" as const, fontFamily: "'Space Mono', monospace" }}>Before</div>
-            <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 700, color: "#10b981", letterSpacing: 1, textTransform: "uppercase" as const, fontFamily: "'Space Mono', monospace" }}>After</div>
+            <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 700, color: "#64748b", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Space Mono', monospace" }}>Area</div>
+            <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 700, color: "#ef4444", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Space Mono', monospace" }}>Before</div>
+            <div style={{ padding: "14px 16px", fontSize: 12, fontWeight: 700, color: "#10b981", letterSpacing: 1, textTransform: "uppercase", fontFamily: "'Space Mono', monospace" }}>After</div>
           </div>
           {study.beforeAfter.map((b, i) => (
             <BeforeAfterRow key={i} {...b} index={i} animate={baInView} />
@@ -814,7 +700,7 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
       {/* CTA */}
       <div
         style={{
-          textAlign: "center" as const,
+          textAlign: "center",
           padding: "48px 32px",
           background: "linear-gradient(135deg, rgba(59,130,246,0.08), rgba(16,185,129,0.06))",
           borderRadius: 20,
@@ -836,6 +722,7 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
             borderRadius: 12,
             textDecoration: "none",
             boxShadow: "0 4px 24px rgba(59,130,246,0.3)",
+            transition: "transform 0.2s, box-shadow 0.2s",
           }}
         >
           Start Your Project →
@@ -848,9 +735,8 @@ function CaseStudyPage({ study }: { study: CaseStudy }) {
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
-
-export default function CaseStudies(): JSX.Element {
-  const [activeStudy, setActiveStudy] = useState<number | null>(null);
+export default function CaseStudies() {
+  const [activeStudy, setActiveStudy] = useState(null);
   const [heroRef, heroInView] = useInView(0.05);
   const [gridRef, gridInView] = useInView(0.05);
 
@@ -860,22 +746,15 @@ export default function CaseStudies(): JSX.Element {
     link.href = "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700;800;900&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
+    return () => document.head.removeChild(link);
   }, []);
 
-  // Scroll to the Case Studies section (not page top) on study change
+  // Scroll to top on study change
   useEffect(() => {
-    const section = document.getElementById("Case_Studies");
-    if (section) {
-      const headerOffset = 80;
-      const top = section.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [activeStudy]);
 
-  const bgStyle: CSSProperties = {
+  const bgStyle = {
     minHeight: "100vh",
     background: "#0a0e1a",
     fontFamily: "'DM Sans', -apple-system, sans-serif",
@@ -887,9 +766,9 @@ export default function CaseStudies(): JSX.Element {
   if (activeStudy !== null) {
     const study = caseStudies[activeStudy];
     return (
-      <div id="Case_Studies" style={bgStyle}>
+      <div style={bgStyle}>
         {/* Ambient background */}
-        <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" as const }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
           <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,0.06), transparent 70%)" }} />
           <div style={{ position: "absolute", bottom: -200, left: -200, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.04), transparent 70%)" }} />
         </div>
@@ -914,16 +793,8 @@ export default function CaseStudies(): JSX.Element {
                 transition: "all 0.2s",
                 fontFamily: "inherit",
               }}
-              onMouseEnter={(e) => {
-                const target = e.currentTarget;
-                target.style.background = "rgba(255,255,255,0.08)";
-                target.style.color = "#e2e8f0";
-              }}
-              onMouseLeave={(e) => {
-                const target = e.currentTarget;
-                target.style.background = "rgba(255,255,255,0.05)";
-                target.style.color = "#94a3b8";
-              }}
+              onMouseEnter={(e) => { e.target.style.background = "rgba(255,255,255,0.08)"; e.target.style.color = "#e2e8f0"; }}
+              onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.05)"; e.target.style.color = "#94a3b8"; }}
             >
               ← All Case Studies
             </button>
@@ -937,9 +808,9 @@ export default function CaseStudies(): JSX.Element {
 
   // ---- LISTING PAGE ----
   return (
-    <div id="Case_Studies" style={bgStyle}>
+    <div style={bgStyle}>
       {/* Ambient background */}
-      <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" as const }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }}>
         <div style={{ position: "absolute", top: -300, left: "50%", transform: "translateX(-50%)", width: 800, height: 800, borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,0.07), transparent 70%)" }} />
         <div style={{ position: "absolute", bottom: -200, right: -100, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.05), transparent 70%)" }} />
       </div>
@@ -949,7 +820,7 @@ export default function CaseStudies(): JSX.Element {
         <div
           ref={heroRef}
           style={{
-            textAlign: "center" as const,
+            textAlign: "center",
             padding: "100px 0 80px",
             opacity: heroInView ? 1 : 0,
             transform: heroInView ? "translateY(0)" : "translateY(40px)",
@@ -977,12 +848,12 @@ export default function CaseStudies(): JSX.Element {
               border: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            {([
+            {[
               { label: "Projects", value: "4" },
               { label: "Industries", value: "4" },
               { label: "Avg. Delivery", value: "10 wk" },
               { label: "Success Rate", value: "100%" },
-            ] as const).map((s, i) => (
+            ].map((s, i) => (
               <div key={i} style={{ padding: "20px 32px", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
                 <div style={{ fontSize: 24, fontWeight: 800, color: "#f1f5f9", fontFamily: "'Space Mono', monospace" }}>{s.value}</div>
                 <div style={{ fontSize: 12, color: "#64748b", fontWeight: 600, marginTop: 4, letterSpacing: 0.5 }}>{s.label}</div>
@@ -1019,18 +890,16 @@ export default function CaseStudies(): JSX.Element {
                 overflow: "hidden",
               }}
               onMouseEnter={(e) => {
-                const target = e.currentTarget;
-                target.style.background = "rgba(255,255,255,0.04)";
-                target.style.borderColor = "rgba(59,130,246,0.3)";
-                target.style.transform = "translateY(-4px)";
-                target.style.boxShadow = "0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(59,130,246,0.08)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                e.currentTarget.style.borderColor = "rgba(59,130,246,0.3)";
+                e.currentTarget.style.transform = "translateY(-4px)";
+                e.currentTarget.style.boxShadow = "0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(59,130,246,0.08)";
               }}
               onMouseLeave={(e) => {
-                const target = e.currentTarget;
-                target.style.background = "rgba(255,255,255,0.02)";
-                target.style.borderColor = "rgba(255,255,255,0.06)";
-                target.style.transform = "translateY(0)";
-                target.style.boxShadow = "none";
+                e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
               }}
             >
               {/* Top bar */}
@@ -1055,12 +924,12 @@ export default function CaseStudies(): JSX.Element {
               <p style={{ fontSize: 14, color: "#94a3b8", margin: "0 0 24px", lineHeight: 1.6 }}>{study.tagline}</p>
 
               {/* Quick stats */}
-              <div style={{ display: "flex", gap: 20, marginBottom: 24, flexWrap: "wrap" as const }}>
-                {([
+              <div style={{ display: "flex", gap: 20, marginBottom: 24, flexWrap: "wrap" }}>
+                {[
                   { icon: "⏱", value: study.timeline },
                   { icon: "👥", value: study.teamSize },
                   { icon: "💰", value: study.investment },
-                ] as const).map((s, i) => (
+                ].map((s, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ fontSize: 14 }}>{s.icon}</span>
                     <span style={{ fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>{s.value}</span>
@@ -1069,7 +938,7 @@ export default function CaseStudies(): JSX.Element {
               </div>
 
               {/* Tech tags */}
-              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: 24 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 24 }}>
                 {study.techTags.slice(0, 5).map((t) => (
                   <span
                     key={t}
@@ -1090,7 +959,7 @@ export default function CaseStudies(): JSX.Element {
               </div>
 
               {/* Key results preview */}
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {study.results.slice(0, 3).map((r, i) => (
                   <div
                     key={i}
@@ -1100,7 +969,7 @@ export default function CaseStudies(): JSX.Element {
                       padding: "14px 12px",
                       background: "rgba(16,185,129,0.05)",
                       borderRadius: 10,
-                      textAlign: "center" as const,
+                      textAlign: "center",
                     }}
                   >
                     <div style={{ fontSize: 20, fontWeight: 800, color: "#10b981", fontFamily: "'Space Mono', monospace" }}>{r.value}</div>
@@ -1113,7 +982,7 @@ export default function CaseStudies(): JSX.Element {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginTop: 20 }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: "#3b82f6", display: "flex", alignItems: "center", gap: 6 }}>
                   View Full Case Study
-                  <span style={{ fontSize: 18 }}>→</span>
+                  <span style={{ fontSize: 18, transition: "transform 0.2s" }}>→</span>
                 </span>
               </div>
             </div>
@@ -1121,7 +990,12 @@ export default function CaseStudies(): JSX.Element {
         </div>
 
         {/* Bottom CTA */}
-        <div style={{ textAlign: "center" as const, padding: "60px 32px 100px" }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "60px 32px 100px",
+          }}
+        >
           <h2 style={{ fontSize: 32, fontWeight: 800, color: "#f1f5f9", margin: "0 0 12px" }}>Ready to Start Building?</h2>
           <p style={{ fontSize: 16, color: "#94a3b8", margin: "0 0 32px" }}>Let's turn your idea into production-ready software</p>
           <a
@@ -1136,6 +1010,7 @@ export default function CaseStudies(): JSX.Element {
               borderRadius: 14,
               textDecoration: "none",
               boxShadow: "0 4px 30px rgba(59,130,246,0.35)",
+              transition: "all 0.3s",
             }}
           >
             Get Free Consultation

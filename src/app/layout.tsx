@@ -27,6 +27,8 @@ export const metadata: Metadata = {
   },
 }
 
+import LiveChat from "@/components/LiveChat";
+
 export default function RootLayout({
   children,
 }: {
@@ -37,6 +39,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <Header />
         <main className="pt-0">{children}</main>
+        <LiveChat />
       </body>
     </html>
   )
