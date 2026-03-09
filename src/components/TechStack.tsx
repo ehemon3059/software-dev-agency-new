@@ -12,7 +12,10 @@ import {
   GitBranch,
   CheckCircle,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  Gauge,
+  Lock
 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import ContactModal from './ContactModal'
@@ -27,19 +30,19 @@ const techCategories = [
         name: "React & Next.js",
         purpose: "Server-side rendering, optimal performance, SEO-friendly",
         features: ["Component-based", "TypeScript ready", "Automatic optimization"],
-        color: "blue"
+        color: "brand"
       },
       {
         name: "Tailwind CSS",
         purpose: "Utility-first styling for rapid, consistent development",
         features: ["Mobile-first", "Custom design system", "Production optimized"],
-        color: "cyan"
+        color: "brand"
       },
       {
         name: "Modern JavaScript",
         purpose: "ES6+ features for cleaner, more maintainable code",
         features: ["Async/await", "Module imports", "Modern syntax"],
-        color: "yellow"
+        color: "brand"
       }
     ],
     benefits: [
@@ -47,7 +50,7 @@ const techCategories = [
       "Pixel-perfect responsive designs",
       "Smooth animations and transitions"
     ],
-    color: "blue"
+    color: "brand"
   },
   {
     icon: Server,
@@ -58,19 +61,19 @@ const techCategories = [
         name: "Laravel & Node.js",
         purpose: "Robust frameworks for complex business logic",
         features: ["MVC architecture", "Middleware support", "Queue management"],
-        color: "red"
+        color: "brand"
       },
       {
         name: "RESTful APIs",
         purpose: "Clean, predictable data communication",
         features: ["Standardized endpoints", "Version control", "Documentation"],
-        color: "green"
+        color: "brand"
       },
       {
         name: "Authentication Systems",
         purpose: "Secure access control and user management",
         features: ["JWT tokens", "OAuth integration", "Role-based permissions"],
-        color: "purple"
+        color: "brand"
       }
     ],
     benefits: [
@@ -78,7 +81,7 @@ const techCategories = [
       "Horizontal scalability for traffic spikes",
       "Clean separation of concerns"
     ],
-    color: "emerald"
+    color: "brand"
   },
   {
     icon: Database,
@@ -89,19 +92,19 @@ const techCategories = [
         name: "MySQL & PostgreSQL",
         purpose: "Relational databases for structured data",
         features: ["ACID compliance", "Complex queries", "Data integrity"],
-        color: "indigo"
+        color: "brand"
       },
       {
         name: "MongoDB",
         purpose: "Flexible document storage for evolving schemas",
         features: ["JSON-like documents", "Horizontal scaling", "Rich queries"],
-        color: "green"
+        color: "brand"
       },
       {
         name: "Database Optimization",
         purpose: "Performance tuning for speed at scale",
         features: ["Index optimization", "Query caching", "Connection pooling"],
-        color: "amber"
+        color: "brand"
       }
     ],
     benefits: [
@@ -109,7 +112,7 @@ const techCategories = [
       "Optimized for your specific access patterns",
       "Automatic backups and recovery"
     ],
-    color: "purple"
+    color: "brand"
   },
   {
     icon: Cloud,
@@ -120,19 +123,19 @@ const techCategories = [
         name: "AWS & DigitalOcean",
         purpose: "Scalable cloud infrastructure",
         features: ["Auto-scaling", "Load balancing", "CDN integration"],
-        color: "orange"
+        color: "brand"
       },
       {
         name: "Docker",
         purpose: "Consistent environments across development and production",
         features: ["Containerization", "Easy scaling", "Version control"],
-        color: "blue"
+        color: "brand"
       },
       {
         name: "CI/CD Pipelines",
         purpose: "Automated testing and deployment",
         features: ["GitHub Actions", "Automated tests", "Zero-downtime deploys"],
-        color: "pink"
+        color: "brand"
       }
     ],
     benefits: [
@@ -140,7 +143,7 @@ const techCategories = [
       "Quick rollbacks if needed",
       "Consistent environments team-wide"
     ],
-    color: "orange"
+    color: "brand"
   }
 ]
 
@@ -212,8 +215,8 @@ class ParticleNetwork {
   private draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Use different colors for dark mode
-    const particleColor = this.isDarkMode ? '147, 197, 253' : '99, 102, 241'; // blue-300 for dark, indigo-500 for light
+    // Use accent color #4f6ef7 for particles
+    const particleColor = '79, 110, 247'; // #4f6ef7 in RGB
 
     // Draw connecting lines
     for (let i = 0; i < this.particles.length; i++) {
@@ -224,7 +227,7 @@ class ParticleNetwork {
         
         if (distance < 100) {
           this.ctx.beginPath();
-          this.ctx.strokeStyle = `rgba(${particleColor}, ${this.isDarkMode ? 0.15 : 0.2 * (1 - distance / 100)})`;
+          this.ctx.strokeStyle = `rgba(${particleColor}, ${this.isDarkMode ? 0.15 : 0.1 * (1 - distance / 100)})`;
           this.ctx.lineWidth = 1;
           this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
           this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
@@ -292,7 +295,7 @@ class Particle {
     this.radius = Math.random() * 2 + 1;
     this.maxX = maxX;
     this.maxY = maxY;
-    this.opacity = isDarkMode ? Math.random() * 0.4 + 0.2 : Math.random() * 0.5 + 0.3;
+    this.opacity = isDarkMode ? Math.random() * 0.3 + 0.1 : Math.random() * 0.2 + 0.05;
     this.speed = Math.random() * 0.5 + 0.2;
     this.isDarkMode = isDarkMode;
   }
@@ -315,18 +318,20 @@ class Particle {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    const particleColor = this.isDarkMode ? '147, 197, 253' : '99, 102, 241'; // blue-300 for dark, indigo-500 for light
+    const particleColor = '79, 110, 247'; // #4f6ef7 in RGB
     
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(${particleColor}, ${this.opacity})`;
     ctx.fill();
     
-    // Glow effect
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${particleColor}, ${this.opacity * 0.2})`;
-    ctx.fill();
+    // Glow effect (only in dark mode)
+    if (this.isDarkMode) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${particleColor}, ${this.opacity * 0.3})`;
+      ctx.fill();
+    }
   }
 }
 
@@ -405,8 +410,8 @@ export default function TechStack() {
       ref={sectionRef} 
       className={`py-20 transition-colors duration-300 relative overflow-hidden ${
         isDarkMode 
-          ? 'bg-gradient-to-b from-slate-900 to-slate-800' 
-          : 'bg-gradient-to-b from-white to-slate-50'
+          ? 'bg-[#000000]' 
+          : 'bg-[#ffffff]'
       }`}
     >
       {/* Particle Canvas Background */}
@@ -420,12 +425,12 @@ export default function TechStack() {
         {/* Section Title */}
         <div className="text-center mb-16">
           <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
-            isDarkMode ? 'text-white' : 'text-slate-900'
+            isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
           }`}>
             Technologies We Use (And Why)
           </h2>
           <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
-            isDarkMode ? 'text-slate-400' : 'text-slate-600'
+            isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
           }`}>
             Carefully selected tools that deliver reliable, scalable solutions
           </p>
@@ -436,25 +441,25 @@ export default function TechStack() {
           {techCategories.map((category, index) => (
             <div 
               key={index}
-              className={`backdrop-blur-sm border rounded-xl p-6 hover:shadow-lg transition-all duration-300 ${
+              className={`border rounded-xl p-6 hover:shadow-lg transition-all duration-500 hover:scale-[1.02] ${
                 isDarkMode
-                  ? 'bg-slate-800/90 border-slate-700 hover:border-slate-600 hover:shadow-slate-900/50'
-                  : 'bg-white/90 border-slate-200 hover:border-slate-300'
+                  ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/10'
+                  : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/10'
               }`}
             >
               {/* Category Header */}
               <div className="flex items-center gap-4 mb-6">
-                <div className={`w-12 h-12 ${getColorClass(category.color, isDarkMode).bg} rounded-xl flex items-center justify-center transition-colors duration-300`}>
+                <div className={`w-12 h-12 ${getColorClass(category.color, isDarkMode).bg} rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110`}>
                   <category.icon className={`w-6 h-6 ${getColorClass(category.color, isDarkMode).text}`} />
                 </div>
                 <div>
                   <h3 className={`text-xl font-bold transition-colors duration-300 ${
-                    isDarkMode ? 'text-white' : 'text-slate-900'
+                    isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
                   }`}>
                     {category.title}
                   </h3>
                   <p className={`text-sm transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                    isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
                   }`}>
                     {category.description}
                   </p>
@@ -465,16 +470,18 @@ export default function TechStack() {
               <div className="space-y-4 mb-6">
                 {category.technologies.map((tech, techIndex) => (
                   <div key={techIndex} className="group">
-                    <div className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
-                      isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50/50'
+                    <div className={`flex items-start gap-3 p-3 rounded-lg transition-all duration-300 ${
+                      isDarkMode 
+                        ? 'hover:bg-[rgba(255,255,255,0.03)] hover:border-l-2 hover:border-l-[#4f6ef7]' 
+                        : 'hover:bg-[rgba(0,0,0,0.02)] hover:border-l-2 hover:border-l-[#4f6ef7]'
                     }`}>
-                      <div className={`w-10 h-10 ${getColorClass(tech.color, isDarkMode).bg} rounded-lg flex items-center justify-center flex-shrink-0 mt-1 transition-colors duration-300`}>
+                      <div className={`w-10 h-10 ${getColorClass(tech.color, isDarkMode).bg} rounded-lg flex items-center justify-center flex-shrink-0 mt-1 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
                         <Cpu className={`w-5 h-5 ${getColorClass(tech.color, isDarkMode).text}`} />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <h4 className={`font-bold transition-colors duration-300 ${
-                            isDarkMode ? 'text-white' : 'text-slate-900'
+                            isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
                           }`}>
                             {tech.name}
                           </h4>
@@ -482,15 +489,15 @@ export default function TechStack() {
                             {tech.features.map((_, idx) => (
                               <div 
                                 key={idx}
-                                className={`w-1.5 h-1.5 rounded-full ${
-                                  isDarkMode ? 'bg-blue-500/50' : 'bg-brand/50'
+                                className={`w-1.5 h-1.5 rounded-full bg-[#4f6ef7] ${
+                                  isDarkMode ? 'opacity-50' : 'opacity-30'
                                 }`}
                               />
                             ))}
                           </div>
                         </div>
                         <p className={`text-sm mb-2 transition-colors duration-300 ${
-                          isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                          isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
                         }`}>
                           {tech.purpose}
                         </p>
@@ -498,10 +505,10 @@ export default function TechStack() {
                           {tech.features.map((feature, idx) => (
                             <span
                               key={idx}
-                              className={`px-2 py-1 rounded text-xs font-medium transition-colors duration-300 ${
+                              className={`px-2 py-1 rounded text-xs font-medium transition-all duration-300 ${
                                 isDarkMode 
-                                  ? 'bg-slate-700 text-slate-300' 
-                                  : 'bg-slate-100/50 text-slate-700'
+                                  ? 'bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] text-[#a1a1aa]' 
+                                  : 'bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.08)] text-[#71717a]'
                               }`}
                             >
                               {feature}
@@ -516,22 +523,22 @@ export default function TechStack() {
 
               {/* Benefits */}
               <div className={`pt-4 border-t transition-colors duration-300 ${
-                isDarkMode ? 'border-slate-700/50' : 'border-slate-200/50'
+                isDarkMode ? 'border-[rgba(255,255,255,0.08)]' : 'border-[rgba(0,0,0,0.08)]'
               }`}>
                 <h5 className={`text-sm font-semibold mb-3 flex items-center gap-2 transition-colors duration-300 ${
-                  isDarkMode ? 'text-white' : 'text-slate-900'
+                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
                 }`}>
-                  <CheckCircle className={`w-4 h-4 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-500'}`} />
+                  <CheckCircle className={`w-4 h-4 text-[#4f6ef7]`} />
                   What This Means For You:
                 </h5>
                 <ul className="space-y-2">
                   {category.benefits.map((benefit, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <div className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 ${
-                        isDarkMode ? 'bg-blue-400' : 'bg-brand'
+                      <div className={`w-1.5 h-1.5 mt-2 rounded-full flex-shrink-0 bg-[#4f6ef7] ${
+                        isDarkMode ? 'opacity-80' : 'opacity-100'
                       }`} />
                       <span className={`text-sm transition-colors duration-300 ${
-                        isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                        isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
                       }`}>{benefit}</span>
                     </li>
                   ))}
@@ -542,30 +549,26 @@ export default function TechStack() {
         </div>
 
         {/* Philosophy Card */}
-        <div className={`backdrop-blur-sm border rounded-2xl p-8 transition-colors duration-300 ${
+        <div className={`border rounded-2xl p-8 transition-all duration-500 hover:shadow-xl ${
           isDarkMode
-            ? 'bg-gradient-to-r from-blue-900/30 to-blue-800/30 border-blue-800'
-            : 'bg-gradient-to-r from-blue-50/80 to-blue-100/80 border-blue-200'
+            ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/20'
+            : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/10'
         }`}>
           <div className="flex flex-col lg:flex-row items-center gap-6">
             <div className="lg:w-1/4">
-              <div className={`w-16 h-16 rounded-xl flex items-center justify-center mx-auto lg:mx-0 transition-colors duration-300 ${
-                isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
-              }`}>
-                <Layers className={`w-8 h-8 transition-colors duration-300 ${
-                  isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                }`} />
+              <div className={`w-16 h-16 rounded-xl flex items-center justify-center mx-auto lg:mx-0 transition-all duration-300 hover:scale-110 hover:rotate-3 bg-[#4f6ef7] bg-opacity-10`}>
+                <Layers className="w-8 h-8 text-[#4f6ef7]" />
               </div>
             </div>
             
             <div className="lg:w-2/4 text-center lg:text-left">
               <h3 className={`text-xl font-bold mb-2 transition-colors duration-300 ${
-                isDarkMode ? 'text-white' : 'text-slate-900'
+                isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
               }`}>
                 Technology That Serves Your Goals
               </h3>
               <p className={`transition-colors duration-300 ${
-                isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
               }`}>
                 We choose the right technology for YOUR needs, not the latest trend. 
                 Every decision is made with your business objectives, scalability requirements, 
@@ -576,28 +579,24 @@ export default function TechStack() {
             <div className="lg:w-1/4 flex flex-col items-center lg:items-end">
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="text-center">
-                  <div className={`text-2xl font-bold transition-colors duration-300 ${
-                    isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                  }`}>100%</div>
+                  <div className="text-2xl font-bold text-[#4f6ef7]">100%</div>
                   <div className={`text-xs transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                    isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
                   }`}>Client Focus</div>
                 </div>
                 <div className="text-center">
-                  <div className={`text-2xl font-bold transition-colors duration-300 ${
-                    isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                  }`}>✓</div>
+                  <div className="text-2xl font-bold text-[#4f6ef7]">✓</div>
                   <div className={`text-xs transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                    isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
                   }`}>Right Fit</div>
                 </div>
               </div>
               <button 
                 onClick={() => setIsContactModalOpen(true)}  
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4f6ef7] text-white font-semibold rounded-lg hover:bg-[#4f6ef7]/90 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#4f6ef7]/25"
               >
                 <span>Discuss Your Tech Needs</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
           </div>
@@ -624,27 +623,23 @@ export default function TechStack() {
           ].map((capability, index) => (
             <div 
               key={index} 
-              className={`flex items-center gap-4 p-4 backdrop-blur-sm border rounded-xl transition-colors duration-300 ${
+              className={`flex items-center gap-4 p-4 border rounded-xl transition-all duration-500 hover:scale-105 hover:shadow-lg ${
                 isDarkMode
-                  ? 'bg-slate-800/90 border-slate-700'
-                  : 'bg-white/90 border-slate-200'
+                  ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/10'
+                  : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/10'
               }`}
             >
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
-                isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
-              }`}>
-                <capability.icon className={`w-6 h-6 transition-colors duration-300 ${
-                  isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                }`} />
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 bg-[#4f6ef7] bg-opacity-10`}>
+                <capability.icon className="w-6 h-6 text-[#4f6ef7]" />
               </div>
               <div>
                 <h4 className={`font-bold mb-1 transition-colors duration-300 ${
-                  isDarkMode ? 'text-white' : 'text-slate-900'
+                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
                 }`}>
                   {capability.title}
                 </h4>
                 <p className={`text-sm transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                  isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
                 }`}>
                   {capability.description}
                 </p>
@@ -668,57 +663,61 @@ export default function TechStack() {
 function getColorClass(color: string, isDarkMode: boolean) {
   if (isDarkMode) {
     switch (color) {
+      case 'brand':
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'blue':
-        return { bg: 'bg-blue-900/50', text: 'text-blue-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'cyan':
-        return { bg: 'bg-cyan-900/50', text: 'text-cyan-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'yellow':
-        return { bg: 'bg-yellow-900/50', text: 'text-yellow-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'red':
-        return { bg: 'bg-red-900/50', text: 'text-red-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'green':
-        return { bg: 'bg-green-900/50', text: 'text-green-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'purple':
-        return { bg: 'bg-purple-900/50', text: 'text-purple-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'indigo':
-        return { bg: 'bg-indigo-900/50', text: 'text-indigo-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'amber':
-        return { bg: 'bg-amber-900/50', text: 'text-amber-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'orange':
-        return { bg: 'bg-orange-900/50', text: 'text-orange-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'pink':
-        return { bg: 'bg-pink-900/50', text: 'text-pink-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       case 'emerald':
-        return { bg: 'bg-emerald-900/50', text: 'text-emerald-400' }
+        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
       default:
-        return { bg: 'bg-slate-700', text: 'text-slate-300' }
+        return { bg: 'bg-[rgba(255,255,255,0.03)]', text: 'text-[#a1a1aa]' }
     }
   } else {
     switch (color) {
+      case 'brand':
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'blue':
-        return { bg: 'bg-blue-100', text: 'text-blue-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'cyan':
-        return { bg: 'bg-cyan-100', text: 'text-cyan-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'yellow':
-        return { bg: 'bg-yellow-100', text: 'text-yellow-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'red':
-        return { bg: 'bg-red-100', text: 'text-red-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'green':
-        return { bg: 'bg-green-100', text: 'text-green-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'purple':
-        return { bg: 'bg-purple-100', text: 'text-purple-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'indigo':
-        return { bg: 'bg-indigo-100', text: 'text-indigo-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'amber':
-        return { bg: 'bg-amber-100', text: 'text-amber-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'orange':
-        return { bg: 'bg-orange-100', text: 'text-orange-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'pink':
-        return { bg: 'bg-pink-100', text: 'text-pink-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       case 'emerald':
-        return { bg: 'bg-emerald-100', text: 'text-emerald-600' }
+        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
       default:
-        return { bg: 'bg-brand/10', text: 'text-brand' }
+        return { bg: 'bg-[rgba(0,0,0,0.02)]', text: 'text-[#71717a]' }
     }
   }
 }

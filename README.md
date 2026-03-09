@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+{/* 1. Hero — First impression, value proposition */}
+<Hero />
 
-## Getting Started
+{/* 2. Social Proof — Immediately back up the claim (real stats only) */}
+<SocialProof />
 
-First, run the development server:
+{/* 3. Problems — Show you understand their pain */}
+<ProblemSolution />
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+{/* 4. Services — Here's how we solve it */}
+<ServicesSection />
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+{/* 5. Case Studies — Proof we've done it before */}
+<CaseStudies />
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+{/* 6. Process — How we work together */}
+<ProcessSection />
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+{/* 7. Tech Stack — What we build with */}
+<TechStack />
 
-## Learn More
+{/* 8. Testimonials — Social validation */}
+<Testimonials />
 
-To learn more about Next.js, take a look at the following resources:
+{/* 9. Founders — Meet the people */}
+<FoundersSection />
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+{/* 10. Pricing — Show the investment */}
+<Pricing />
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+{/* 11. Project Estimator — Interactive lead capture */}
+<ProjectEstimator />
 
-## Deploy on Vercel
+{/* 12. Perfect Fit — Qualify the visitor */}
+<PerfectFit />
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+{/* 13. Why Choose Us — Final persuasion */}
+<WhyChooseUs />
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+{/* 14. FAQ — Remove objections */}
+<FAQSection />
+
+{/* 15. Final CTA — Close the deal */}
+<FinalCTA />
+
+{/* 16. Footer */}
+<Footer />
+
+{/* 17. Floating (not in flow) */}
+<LiveChat />

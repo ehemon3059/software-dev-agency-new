@@ -37,39 +37,41 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
       
+  
 
-      {/* Trust bar  */}
-
-      {/* <TrustBar /> */}
-
-      <ClientLogos />   
 
       <SocialProof />
+
+      <ProblemSolution />
+
+      <ServicesSection/>
+
       <CaseStudies />
+
+    <ProcessSection />
+      
+    <TechStack />
+      <Testimonials /> 
+
       <FoundersSection />
 
-      <Testimonials /> 
+    <Pricing />
 
       <BlogSection />
 
       <ProjectEstimator />
 
 
-      <ProblemSolution />
 
       {/* Services Section */}
-      <ServicesSection/>
 
 
     
 
-    <ProcessSection />
 
-    <TechStack />
 
     <PerfectFit />
 
-    <Pricing />
 
     <WhyChooseUs/>
 

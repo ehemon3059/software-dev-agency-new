@@ -1,369 +1,399 @@
 'use client'
-import { ArrowRight, PlayCircle, CheckCircle } from 'lucide-react'
-import { useEffect, useState } from 'react'
+
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { ArrowRight } from 'lucide-react'
 import ContactModal from './ContactModal'
 
-export default function Hero() {
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+const ACCENT = '#6366f1'
+const CYAN = '#22d3ee'
+const ACCENT_GLOW = 'rgba(99,102,241,0.4)'
+
+function useTheme() {
+  const [isDark, setIsDark] = useState(true)
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.classList.contains('dark'))
+    check()
+    const obs = new MutationObserver(check)
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => obs.disconnect()
+  }, [])
+  return isDark
+}
+
+// Floating particle system
+function Particles({ isDark }: { isDark: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
-    setIsVisible(true)
-    
-    // Check for dark mode on mount and when it changes
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark')
-      setIsDarkMode(isDark)
-    }
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-    // Initial check
-    checkDarkMode()
+    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight }
+    resize()
+    window.addEventListener('resize', resize)
 
-    // Create an observer to watch for class changes on html element
-    const observer = new MutationObserver(checkDarkMode)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    })
-
-    return () => observer.disconnect()
-  }, [])
-
-  const scrollToProjects = () => {
-    const projectsSection = document.getElementById('Case_Studies')
-    if (projectsSection) {
-      const headerOffset = 80
-      const elementPosition = projectsSection.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
+    const particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number; pulse: number }[] = []
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.5 + 0.1,
+        pulse: Math.random() * Math.PI * 2,
       })
     }
-  }
+
+    let frame: number
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.pulse += 0.02
+        if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0
+        if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0
+        const o = p.opacity * (0.6 + 0.4 * Math.sin(p.pulse))
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fillStyle = isDark ? `rgba(99,102,241,${o})` : `rgba(99,102,241,${o * 0.5})`
+        ctx.fill()
+      })
+      // Connect nearby particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x
+          const dy = particles[i].y - particles[j].y
+          const d = Math.sqrt(dx * dx + dy * dy)
+          if (d < 120) {
+            ctx.beginPath()
+            ctx.moveTo(particles[i].x, particles[i].y)
+            ctx.lineTo(particles[j].x, particles[j].y)
+            ctx.strokeStyle = isDark ? `rgba(99,102,241,${0.06 * (1 - d / 120)})` : `rgba(99,102,241,${0.04 * (1 - d / 120)})`
+            ctx.lineWidth = 0.5
+            ctx.stroke()
+          }
+        }
+      }
+      frame = requestAnimationFrame(animate)
+    }
+    animate()
+    return () => { window.removeEventListener('resize', resize); cancelAnimationFrame(frame) }
+  }, [isDark])
+
+  return <canvas ref={canvasRef} style={{ position: 'absolute' as const, inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} />
+}
+
+// Typing code animation
+function TerminalCode({ isDark }: { isDark: boolean }) {
+  const [visibleLines, setVisibleLines] = useState(0)
+
+  useEffect(() => {
+    let line = 0
+    const interval = setInterval(() => {
+      line++
+      setVisibleLines(line)
+      if (line >= 7) clearInterval(interval)
+    }, 400)
+    return () => clearInterval(interval)
+  }, [])
+
+  const lines = [
+    { prefix: 'const', name: 'project', op: '=', keyword: 'await', fn: 'papatiger', method: '.build', paren: '({' },
+    { indent: true, key: 'idea', val: '"your-startup"' },
+    { indent: true, key: 'stack', val: '"next.js + node + postgres"' },
+    { indent: true, key: 'delivery', val: '"4-8 weeks"' },
+    { indent: true, key: 'price', val: '"fixed, no surprises"' },
+    { close: true },
+    { output: true },
+  ]
+
+  const bg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+  const border = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
+  const purple = isDark ? '#c084fc' : '#7c3aed'
+  const blue = isDark ? '#60a5fa' : '#2563eb'
+  const green = isDark ? '#4ade80' : '#16a34a'
+  const yellow = isDark ? '#fbbf24' : '#d97706'
+  const pink = isDark ? '#f9a8d4' : '#db2777'
+  const dim = isDark ? '#52525b' : '#a1a1aa'
+  const txt = isDark ? '#e2e8f0' : '#374151'
 
   return (
-    <section className={`relative min-h-screen flex items-center overflow-hidden transition-colors duration-300 ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
-        : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
-    }`}>
-      {/* Subtle grid pattern */}
-      <div className="absolute inset-0 z-0 opacity-5">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `linear-gradient(to right, ${isDarkMode ? '#60A5FA' : '#3B82F6'} 1px, transparent 1px),
-                            linear-gradient(to bottom, ${isDarkMode ? '#60A5FA' : '#3B82F6'} 1px, transparent 1px)`,
-            backgroundSize: '40px 40px'
-          }}
-        />
+    <div style={{
+      maxWidth: 620, margin: '0 auto', borderRadius: 16, overflow: 'hidden',
+      border: `1px solid ${border}`, background: bg,
+      boxShadow: isDark ? `0 8px 40px rgba(0,0,0,0.4), 0 0 80px rgba(99,102,241,0.06)` : '0 4px 24px rgba(0,0,0,0.08)',
+    }}>
+      {/* Terminal bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: `1px solid ${border}` }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444', opacity: 0.8 }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#f59e0b', opacity: 0.8 }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', opacity: 0.8 }} />
+        </div>
+        <span style={{ fontSize: 11, color: dim, fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>papatiger.ts</span>
+        <div style={{ width: 50 }} />
       </div>
+      {/* Code */}
+      <div style={{ padding: '18px 22px', fontFamily: "'JetBrains Mono', monospace", fontSize: 13, lineHeight: 2 }}>
+        {visibleLines >= 1 && <div style={{ animation: 'fadeSlideIn 0.3s ease' }}>
+          <span style={{ color: purple }}>const</span> <span style={{ color: blue }}>project</span> <span style={{ color: dim }}>=</span> <span style={{ color: yellow }}>await</span> <span style={{ color: green }}>papatiger</span><span style={{ color: dim }}>.build</span><span style={{ color: dim }}>{'({'}</span>
+        </div>}
+        {visibleLines >= 2 && <div style={{ paddingLeft: 24, animation: 'fadeSlideIn 0.3s ease' }}><span style={{ color: pink }}>idea</span><span style={{ color: dim }}>:</span> <span style={{ color: green }}>&quot;your-startup&quot;</span><span style={{ color: dim }}>,</span></div>}
+        {visibleLines >= 3 && <div style={{ paddingLeft: 24, animation: 'fadeSlideIn 0.3s ease' }}><span style={{ color: pink }}>stack</span><span style={{ color: dim }}>:</span> <span style={{ color: green }}>&quot;next.js + node + postgres&quot;</span><span style={{ color: dim }}>,</span></div>}
+        {visibleLines >= 4 && <div style={{ paddingLeft: 24, animation: 'fadeSlideIn 0.3s ease' }}><span style={{ color: pink }}>delivery</span><span style={{ color: dim }}>:</span> <span style={{ color: green }}>&quot;4-8 weeks&quot;</span><span style={{ color: dim }}>,</span></div>}
+        {visibleLines >= 5 && <div style={{ paddingLeft: 24, animation: 'fadeSlideIn 0.3s ease' }}><span style={{ color: pink }}>price</span><span style={{ color: dim }}>:</span> <span style={{ color: green }}>&quot;fixed, no surprises&quot;</span></div>}
+        {visibleLines >= 6 && <div style={{ animation: 'fadeSlideIn 0.3s ease' }}><span style={{ color: dim }}>{'});'}</span></div>}
+        {visibleLines >= 7 && <div style={{ marginTop: 8, animation: 'fadeSlideIn 0.3s ease' }}>
+          <span style={{ color: dim }}>{'// '}</span><span style={{ color: green, fontWeight: 600 }}>→ &quot;shipped&quot; ✓</span>
+          <span style={{ display: 'inline-block', width: 8, height: 16, background: ACCENT, marginLeft: 4, animation: 'blink 1s infinite', verticalAlign: 'middle', borderRadius: 1 }} />
+        </div>}
+      </div>
+    </div>
+  )
+}
 
-      {/* Floating elements */}
-      <div className={`absolute top-1/4 left-10 w-72 h-72 rounded-full blur-3xl z-0 transition-colors duration-300 ${
-        isDarkMode ? 'bg-blue-600/20' : 'bg-blue-400/20'
-      }`} />
-      <div className={`absolute bottom-1/4 right-10 w-96 h-96 rounded-full blur-3xl z-0 transition-colors duration-300 ${
-        isDarkMode ? 'bg-indigo-600/15' : 'bg-indigo-400/15'
-      }`} />
+export default function Hero() {
+  const isDark = useTheme()
+  const [contactOpen, setContactOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const containerRef = useRef<HTMLDivElement>(null)
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Column - Content */}
-          <div className={`space-y-8 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            {/* Tagline */}
-            <div className={`inline-flex items-center space-x-2 font-semibold px-4 py-2 rounded-full transition-colors duration-300 ${
-              isDarkMode 
-                ? 'bg-blue-900/50 text-blue-300' 
-                : 'bg-blue-100 text-blue-700'
-            }`}>
-              <CheckCircle className="w-4 h-4" />
-              <span>Trusted by 100+ Startups</span>
+  useEffect(() => { setMounted(true) }, [])
+
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const r = containerRef.current.getBoundingClientRect()
+        setMousePos({ x: e.clientX - r.left, y: e.clientY - r.top })
+      }
+    }
+    window.addEventListener('mousemove', handle)
+    return () => window.removeEventListener('mousemove', handle)
+  }, [])
+
+  const scrollToWork = () => {
+    const el = document.getElementById('Case_Studies')
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 72, behavior: 'smooth' })
+  }
+
+  const bg = isDark ? '#050508' : '#fafafa'
+  const tp = isDark ? '#fafafa' : '#09090b'
+  const ts = isDark ? '#a1a1aa' : '#71717a'
+  const tt = isDark ? '#52525b' : '#a1a1aa'
+  const border = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
+  const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes scrollLine { 0% { transform: scaleY(0); opacity: 0; } 50% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(0); opacity: 0; } }
+        @keyframes heroBlurIn { from { opacity: 0; filter: blur(12px); transform: translateY(24px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
+      `}</style>
+
+      <section ref={containerRef} style={{
+        position: 'relative' as const, minHeight: '100vh', background: bg, overflow: 'hidden',
+        display: 'flex', alignItems: 'center', fontFamily: "'Syne', sans-serif",
+      }}>
+        {/* Gradient mesh blobs */}
+        <div style={{ position: 'absolute' as const, inset: 0, pointerEvents: 'none' as const }}>
+          {/* Primary orb */}
+          <div style={{
+            position: 'absolute' as const, top: '-15%', left: '50%', transform: 'translateX(-50%)',
+            width: 900, height: 700, borderRadius: '50%',
+            background: `radial-gradient(ellipse, ${isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.08)'}, transparent 70%)`,
+            filter: 'blur(40px)', animation: 'float 8s ease-in-out infinite',
+          }} />
+          {/* Cyan accent orb */}
+          <div style={{
+            position: 'absolute' as const, bottom: '10%', right: '-10%',
+            width: 500, height: 500, borderRadius: '50%',
+            background: `radial-gradient(circle, ${isDark ? 'rgba(34,211,238,0.08)' : 'rgba(34,211,238,0.05)'}, transparent 70%)`,
+            filter: 'blur(60px)', animation: 'float 10s ease-in-out infinite reverse',
+          }} />
+          {/* Grid */}
+          <div style={{
+            position: 'absolute' as const, inset: 0,
+            backgroundImage: `linear-gradient(${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'} 1px, transparent 1px)`,
+            backgroundSize: '72px 72px',
+            maskImage: 'radial-gradient(ellipse 60% 50% at 50% 40%, black 30%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 40%, black 30%, transparent 100%)',
+          }} />
+        </div>
+
+        {/* Particles */}
+        <Particles isDark={isDark} />
+
+        {/* Mouse glow */}
+        {mounted && <div style={{
+          position: 'absolute' as const, left: mousePos.x - 250, top: mousePos.y - 250,
+          width: 500, height: 500, borderRadius: '50%',
+          background: `radial-gradient(circle, ${isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.06)'}, transparent 70%)`,
+          pointerEvents: 'none' as const, transition: 'left 0.15s linear, top 0.15s linear',
+        }} />}
+
+        {/* Content */}
+        <div style={{ position: 'relative' as const, zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '140px 24px 80px', width: '100%' }}>
+          <div style={{ maxWidth: 820, margin: '0 auto', textAlign: 'center' as const }}>
+
+            {/* Badge */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '7px 7px 7px 16px', borderRadius: 999,
+              border: `1px solid ${border}`, background: cardBg,
+              marginBottom: 36,
+              animation: mounted ? 'heroBlurIn 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both' : 'none',
+            }}>
+              <span style={{ fontSize: 13, color: ts, fontWeight: 500 }}>We build production-ready software</span>
+              <span style={{
+                padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700,
+                background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`, color: '#fff',
+                boxShadow: `0 2px 12px ${ACCENT_GLOW}`,
+                fontFamily: "'JetBrains Mono', monospace",
+              }}>5+ shipped</span>
             </div>
 
-            {/* Main Headline */}
-            <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight transition-colors duration-300 ${
-              isDarkMode ? 'text-white' : 'text-slate-900'
-            }`}>
-              Custom Web Applications{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-                Built Right
+            {/* Headline */}
+            <h1 style={{
+              fontSize: 'clamp(44px, 8vw, 80px)', fontWeight: 800, lineHeight: 1.02,
+              letterSpacing: '-0.05em', margin: '0 0 24px', color: tp,
+              animation: mounted ? 'heroBlurIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.25s both' : 'none',
+            }}>
+              Build software
+              <br />
+              <span style={{
+                background: `linear-gradient(135deg, ${ACCENT}, ${CYAN}, ${ACCENT})`,
+                backgroundSize: '200% 100%',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                animation: 'gradientShift 4s ease infinite',
+              }}>
+                that actually ships.
               </span>
-              {' '}- For Startups Who Can't Afford Mistakes
             </h1>
 
-            {/* Sub-headline */}
-            <p className={`text-xl leading-relaxed transition-colors duration-300 ${
-              isDarkMode ? 'text-slate-300' : 'text-slate-600'
-            }`}>
-              We build web applications for service-based businesses — turning 
-              ideas into production-ready systems or modernizing what's broken.
+            {/* Subtitle */}
+            <p style={{
+              fontSize: 'clamp(17px, 2.5vw, 21px)', lineHeight: 1.6, color: ts,
+              maxWidth: 540, margin: '0 auto 44px', fontWeight: 400,
+              fontFamily: "'Syne', sans-serif",
+              animation: mounted ? 'heroBlurIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s both' : 'none',
+            }}>
+              We turn ideas into production-ready web applications for startups.
+              Clean architecture. Fixed pricing. No excuses.
             </p>
 
-            {/* Supporting Line */}
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-600 rounded-full" />
-                <span className={`font-medium transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-300' : 'text-slate-700'
-                }`}>Clean code</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-600 rounded-full" />
-                <span className={`font-medium transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-300' : 'text-slate-700'
-                }`}>Scalable architecture</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-600 rounded-full" />
-                <span className={`font-medium transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-300' : 'text-slate-700'
-                }`}>Long-term support</span>
-              </div>
+            {/* CTAs */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap' as const,
+              marginBottom: 56,
+              animation: mounted ? 'heroBlurIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.55s both' : 'none',
+            }}>
+              {/* Primary — glowing gradient */}
+              <button onClick={() => setContactOpen(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '15px 32px', borderRadius: 14,
+                  border: 'none', cursor: 'pointer', fontFamily: "'Syne', sans-serif",
+                  background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`,
+                  color: '#fff', fontSize: 16, fontWeight: 700,
+                  boxShadow: `0 4px 28px ${ACCENT_GLOW}, 0 0 80px rgba(34,211,238,0.1)`,
+                  transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)'
+                  e.currentTarget.style.boxShadow = `0 8px 40px ${ACCENT_GLOW}, 0 0 100px rgba(34,211,238,0.15)`
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)'
+                  e.currentTarget.style.boxShadow = `0 4px 28px ${ACCENT_GLOW}, 0 0 80px rgba(34,211,238,0.1)`
+                }}>
+                Start a Project <ArrowRight className="w-4 h-4" />
+              </button>
+
+              {/* Secondary — ghost with border glow */}
+              <button onClick={scrollToWork}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '15px 32px', borderRadius: 14,
+                  border: `1px solid ${border}`, background: 'transparent',
+                  color: ts, fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: "'Syne', sans-serif",
+                  transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)'
+                  e.currentTarget.style.color = tp
+                  e.currentTarget.style.background = isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.04)'
+                  e.currentTarget.style.boxShadow = `0 0 24px rgba(99,102,241,0.1)`
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = border
+                  e.currentTarget.style.color = ts
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.boxShadow = 'none'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}>
+                View Our Work
+              </button>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button
-                onClick={() => setIsContactModalOpen(true)}
-                className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center space-x-3 overflow-hidden"
-              >
-                <span className="relative z-10">Get a Free Consultation</span>
-                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </button>
-              
-              <button
-                onClick={scrollToProjects}
-                className={`group px-8 py-4 border-2 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center space-x-3 ${
-                  isDarkMode
-                    ? 'border-blue-500 text-blue-400 hover:bg-blue-900/30'
-                    : 'border-blue-600 text-blue-700 hover:bg-blue-50'
-                }`}
-              >
-                <span>View Our Work</span>
-                <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-              </button>
-            </div>
-
-            {/* Trust Indicators */}
-            <div className={`pt-8 border-t transition-colors duration-300 ${
-              isDarkMode ? 'border-slate-700' : 'border-slate-200'
-            }`}>
-              <div className="flex flex-wrap gap-6 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                    isDarkMode ? 'bg-green-900/50' : 'bg-green-100'
-                  }`}>
-                    <span className={`font-bold ${
-                      isDarkMode ? 'text-green-400' : 'text-green-600'
-                    }`}>✓</span>
-                  </div>
-                  <span className={isDarkMode ? 'text-slate-400' : 'text-slate-600'}>No setup fees</span>
+            {/* Stats row */}
+            <div style={{
+              display: 'inline-flex', borderRadius: 16, overflow: 'hidden',
+              border: `1px solid ${border}`, background: cardBg,
+              animation: mounted ? 'heroBlurIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.65s both' : 'none',
+            }}>
+              {[
+                { v: '5+', l: 'Apps shipped' },
+                { v: '3+', l: 'Years building' },
+                { v: '99.9%', l: 'Uptime' },
+                { v: '4–8 wk', l: 'Avg. delivery' },
+              ].map((s, i) => (
+                <div key={s.l} style={{
+                  padding: '18px 28px',
+                  borderRight: i < 3 ? `1px solid ${border}` : 'none',
+                  textAlign: 'center' as const,
+                }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: tp, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>{s.v}</div>
+                  <div style={{ fontSize: 11, color: tt, fontWeight: 500, marginTop: 4, fontFamily: "'JetBrains Mono', monospace" }}>{s.l}</div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                    isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
-                  }`}>
-                    <span className={`font-bold ${
-                      isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                    }`}>30</span>
-                  </div>
-                  <span className={isDarkMode ? 'text-slate-400' : 'text-slate-600'}>Day delivery guarantee</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                    isDarkMode ? 'bg-purple-900/50' : 'bg-purple-100'
-                  }`}>
-                    <span className={`font-bold ${
-                      isDarkMode ? 'text-purple-400' : 'text-purple-600'
-                    }`}>24/7</span>
-                  </div>
-                  <span className={isDarkMode ? 'text-slate-400' : 'text-slate-600'}>Support included</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Right Column - Illustration/Graphic */}
-          <div className={`relative hidden lg:block transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            {/* Main Graphic Container */}
-            <div className="relative">
-              {/* Floating card 1 */}
-              <div className={`absolute -top-6 -left-6 w-64 h-64 rounded-2xl shadow-xl p-6 transform rotate-3 transition-colors duration-300 ${
-                isDarkMode 
-                  ? 'bg-gradient-to-br from-slate-800 to-slate-700' 
-                  : 'bg-gradient-to-br from-white to-slate-50'
-              }`}>
-                <div className="space-y-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <div className={`w-8 h-8 rounded transition-colors duration-300 ${
-                      isDarkMode ? 'bg-blue-500' : 'bg-blue-600'
-                    }`} />
-                  </div>
-                  <div className="space-y-2">
-                    <div className={`h-3 rounded w-3/4 transition-colors duration-300 ${
-                      isDarkMode ? 'bg-slate-600' : 'bg-slate-200'
-                    }`} />
-                    <div className={`h-3 rounded w-1/2 transition-colors duration-300 ${
-                      isDarkMode ? 'bg-slate-600' : 'bg-slate-200'
-                    }`} />
-                  </div>
-                  <div className={`h-20 rounded-lg transition-colors duration-300 ${
-                    isDarkMode 
-                      ? 'bg-gradient-to-r from-blue-900/50 to-indigo-900/50' 
-                      : 'bg-gradient-to-r from-blue-100 to-indigo-100'
-                  }`} />
-                </div>
-              </div>
+          {/* Terminal */}
+          <div style={{
+            marginTop: 56,
+            animation: mounted ? 'heroBlurIn 1s cubic-bezier(0.16,1,0.3,1) 0.8s both' : 'none',
+          }}>
+            <TerminalCode isDark={isDark} />
+          </div>
 
-              {/* Floating card 2 */}
-              <div className={`absolute -bottom-6 -right-6 w-72 h-72 rounded-2xl shadow-xl p-6 transform -rotate-3 transition-colors duration-300 ${
-                isDarkMode 
-                  ? 'bg-gradient-to-br from-indigo-900/50 to-slate-800' 
-                  : 'bg-gradient-to-br from-indigo-50 to-white'
-              }`}>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-2">
-                      <div className={`h-4 rounded w-20 transition-colors duration-300 ${
-                        isDarkMode ? 'bg-slate-600' : 'bg-slate-300'
-                      }`} />
-                      <div className="h-6 bg-blue-600 rounded w-32" />
-                    </div>
-                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">↑</span>
-                    </div>
-                  </div>
-                  <div className={`h-32 rounded-lg p-4 transition-colors duration-300 ${
-                    isDarkMode 
-                      ? 'bg-gradient-to-b from-blue-900/30 via-indigo-900/20 to-transparent' 
-                      : 'bg-gradient-to-b from-blue-100 via-indigo-50 to-transparent'
-                  }`}>
-                    <div className="flex items-end h-full space-x-2">
-                      {[20, 40, 60, 80, 60, 40].map((height, index) => (
-                        <div
-                          key={index}
-                          className="flex-1 bg-blue-600 rounded-t transition-all duration-300 hover:bg-indigo-600"
-                          style={{ height: `${height}%` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Central graphic */}
-              <div className={`relative w-full h-96 rounded-3xl shadow-2xl p-8 flex items-center justify-center transition-colors duration-300 ${
-                isDarkMode 
-                  ? 'bg-gradient-to-br from-slate-800 to-slate-700' 
-                  : 'bg-gradient-to-br from-white to-slate-50'
-              }`}>
-                <div className="absolute top-8 left-8 right-8 space-y-6">
-                  {/* Code snippet */}
-                  <div className="space-y-3">
-                    <div className="flex space-x-2">
-                      <div className="w-3 h-3 bg-red-400 rounded-full" />
-                      <div className="w-3 h-3 bg-yellow-400 rounded-full" />
-                      <div className="w-3 h-3 bg-green-400 rounded-full" />
-                    </div>
-                    <div className="space-y-2 font-mono text-sm">
-                      <div className="flex">
-                        <span className="text-purple-600 w-8">1</span>
-                        <span className="text-blue-600">function</span>
-                        <span className={isDarkMode ? 'text-slate-300' : 'text-slate-800'}> launchProject() {'{'}</span>
-                      </div>
-                      <div className="flex">
-                        <span className="text-purple-600 w-8">2</span>
-                        <span className={`ml-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-800'}`}>
-                          return{' '}
-                          <span className="text-green-600">"Success"</span>
-                        </span>
-                      </div>
-                      <div className="flex">
-                        <span className="text-purple-600 w-8">3</span>
-                        <span className={isDarkMode ? 'text-slate-300' : 'text-slate-800'}>{'}'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress indicator */}
-                  <div className="pt-6">
-                    <div className={`flex justify-between text-sm mb-2 ${
-                      isDarkMode ? 'text-slate-400' : 'text-slate-600'
-                    }`}>
-                      <span>Project Progress</span>
-                      <span className="font-semibold text-blue-700">85%</span>
-                    </div>
-                    <div className={`h-2 rounded-full overflow-hidden transition-colors duration-300 ${
-                      isDarkMode ? 'bg-slate-600' : 'bg-slate-200'
-                    }`}>
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full"
-                        style={{ width: '85%' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Status indicator */}
-                  <div className="flex items-center space-x-4 pt-6">
-                    <div className="flex-1">
-                      <div className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Active Users</div>
-                      <div className={`text-2xl font-bold transition-colors duration-300 ${
-                        isDarkMode ? 'text-white' : 'text-slate-900'
-                      }`}>1,240</div>
-                    </div>
-                    <div className="flex-1">
-                      <div className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Uptime</div>
-                      <div className="text-2xl font-bold text-green-600">99.9%</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Animated ring */}
-                <div className="absolute bottom-8 right-8">
-                  <div className="relative w-20 h-20">
-                    <div className={`absolute inset-0 border-4 rounded-full transition-colors duration-300 ${
-                      isDarkMode ? 'border-blue-800' : 'border-blue-200'
-                    }`} />
-                    <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-xl">✓</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Scroll indicator */}
+          <div style={{
+            display: 'flex', justifyContent: 'center', marginTop: 48,
+            animation: mounted ? 'heroBlurIn 0.8s cubic-bezier(0.16,1,0.3,1) 1.2s both' : 'none',
+          }}>
+            <button onClick={scrollToWork} style={{
+              display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 8,
+              background: 'none', border: 'none', cursor: 'pointer', opacity: 0.5,
+            }}>
+              <span style={{ fontSize: 10, color: tt, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase' as const, fontFamily: "'JetBrains Mono', monospace" }}>Scroll</span>
+              <div style={{
+                width: 1, height: 28, background: `linear-gradient(to bottom, ${ACCENT}, transparent)`,
+                transformOrigin: 'top', animation: 'scrollLine 2s ease infinite',
+              }} />
+            </button>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="flex flex-col items-center space-y-2">
-          <span className={`text-sm transition-colors duration-300 ${
-            isDarkMode ? 'text-slate-400' : 'text-slate-600'
-          }`}>Scroll to explore</span>
-          <div className={`w-6 h-10 border-2 rounded-full flex justify-center transition-colors duration-300 ${
-            isDarkMode ? 'border-slate-600' : 'border-slate-300'
-          }`}>
-            <div className={`w-1 h-3 rounded-full mt-2 animate-pulse transition-colors duration-300 ${
-              isDarkMode ? 'bg-slate-500' : 'bg-slate-400'
-            }`} />
-          </div>
-        </div>
-      </div>
-
-      {/* Contact Modal */}
-      <ContactModal 
-        isOpen={isContactModalOpen}
-        onClose={() => setIsContactModalOpen(false)}
-        isDarkMode={isDarkMode}
-      />
-    </section>
+      <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
+    </>
   )
 }

@@ -1,233 +1,134 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Menu, X, ChevronRight, Sun, Moon } from 'lucide-react'
 import ContactModal from './ContactModal'
 
 const NAV_ITEMS = [
-  { id: 'services',     label: 'Services',     href: '#services' },
-  { id: 'Case_Studies', label: 'Case Studies', href: '#Case_Studies' },
-  { id: 'Process',      label: 'Process',      href: '#Process' },
-  { id: 'Pricing',      label: 'Pricing',      href: '#Pricing' },
-  { id: 'FAQ',          label: 'FAQ',          href: '#FAQ' },
+  { id: 'services', label: 'Services', href: '#services' },
+  { id: 'Case_Studies', label: 'Work', href: '#Case_Studies' },
+  { id: 'Process', label: 'Process', href: '#Process' },
+  { id: 'Pricing', label: 'Pricing', href: '#Pricing' },
+  { id: 'Founders', label: 'Team', href: '#Founders' },
+  { id: 'FAQ', label: 'FAQ', href: '#FAQ' },
 ]
 
-// ─── "Built Right" gradient: blue → purple (extracted from screenshot) ────────
-// #4f6ef7 (vivid blue) → #c44de8 (vivid purple/magenta)
-const GRADIENT   = 'linear-gradient(90deg, #4f6ef7 0%, #c44de8 100%)'
-const GRAD_START = '#4f6ef7'
-const GRAD_END   = '#c44de8'
+const ACCENT = '#6366f1'
+const ACCENT_GLOW = 'rgba(99,102,241,0.5)'
+const CYAN = '#22d3ee'
 
-// ─── Colour tokens ────────────────────────────────────────────────────────────
-const TOKENS = {
-  light: {
-    headerBg:         'rgba(238,242,255,0.90)',
-    headerBgScrolled: 'rgba(238,242,255,0.98)',
-    border:           'rgba(79,110,247,0.14)',
-    shadow:           '0 4px 24px rgba(79,110,247,0.09)',
-    navText:          '#374151',
-    navActive:        '#4f6ef7',
-    logoText:         '#111827',
-    logoSub:          '#9ca3af',
-    menuBg:           '#eef2ff',
-    divider:          'rgba(0,0,0,0.09)',
-    themeBtn:         'rgba(79,110,247,0.10)',
-    themeBtnText:     '#4f6ef7',
-  },
-  dark: {
-    headerBg:         'rgba(13,17,23,0.85)',
-    headerBgScrolled: 'rgba(13,17,23,0.97)',
-    border:           'rgba(79,110,247,0.18)',
-    shadow:           '0 8px 40px rgba(0,0,0,0.6)',
-    navText:          '#94a3b8',
-    navActive:        '#818cf8',
-    logoText:         '#f1f5f9',
-    logoSub:          '#4b5563',
-    menuBg:           '#0d1117',
-    divider:          'rgba(255,255,255,0.07)',
-    themeBtn:         'rgba(79,110,247,0.14)',
-    themeBtnText:     '#818cf8',
-  },
+function useTheme() {
+  const [isDark, setIsDark] = useState(true)
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.classList.contains('dark'))
+    check()
+    const obs = new MutationObserver(check)
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => obs.disconnect()
+  }, [])
+  return [isDark, setIsDark] as const
 }
 
-// ─── Tiger Face SVG Logo — illustrated like 🐯 with blue→purple gradient ─────
-function TigerFaceLogo() {
+function LogoMark({ isDark }: { isDark: boolean }) {
   return (
-    <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"
-      className="w-8 h-8" aria-hidden="true">
-      <defs>
-        <linearGradient id="faceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor={GRAD_START} />
-          <stop offset="100%" stopColor={GRAD_END} />
-        </linearGradient>
-        <linearGradient id="earGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor={GRAD_START} />
-          <stop offset="100%" stopColor={GRAD_END} />
-        </linearGradient>
-      </defs>
-
-      {/* ── Ears ── */}
-      <polygon points="7,16 3,4 14,10"  fill="url(#earGrad)" opacity="0.9" />
-      <polygon points="37,16 41,4 30,10" fill="url(#earGrad)" opacity="0.9" />
-      {/* Inner ear */}
-      <polygon points="8,14 5,7  13,11"  fill="white" opacity="0.35" />
-      <polygon points="36,14 39,7 31,11" fill="white" opacity="0.35" />
-
-      {/* ── Main face circle ── */}
-      <circle cx="22" cy="26" r="17" fill="url(#faceGrad)" />
-
-      {/* ── Forehead stripes ── */}
-      <rect x="21" y="11" width="2"   height="6" rx="1" fill="white" opacity="0.30" />
-      <rect x="16" y="12" width="1.5" height="5" rx="0.75" fill="white" opacity="0.22" transform="rotate(-15 16 12)" />
-      <rect x="26" y="12" width="1.5" height="5" rx="0.75" fill="white" opacity="0.22" transform="rotate(15 26 12)" />
-
-      {/* ── Eyes ── */}
-      {/* whites */}
-      <ellipse cx="16.5" cy="24" rx="4"   ry="4.2" fill="white" opacity="0.95" />
-      <ellipse cx="27.5" cy="24" rx="4"   ry="4.2" fill="white" opacity="0.95" />
-      {/* irises — vivid blue */}
-      <circle  cx="16.5" cy="24.2" r="2.6" fill="#3b5bfc" />
-      <circle  cx="27.5" cy="24.2" r="2.6" fill="#3b5bfc" />
-      {/* pupils */}
-      <ellipse cx="16.5" cy="24.2" rx="1.1" ry="1.6" fill="#0a0a1a" />
-      <ellipse cx="27.5" cy="24.2" rx="1.1" ry="1.6" fill="#0a0a1a" />
-      {/* eye shine */}
-      <circle  cx="17.4" cy="23"   r="0.7" fill="white" opacity="0.9" />
-      <circle  cx="28.4" cy="23"   r="0.7" fill="white" opacity="0.9" />
-
-      {/* ── Nose ── */}
-      <ellipse cx="22" cy="30" rx="2.4" ry="1.6" fill="white" opacity="0.5" />
-      <ellipse cx="22" cy="30" rx="1.5" ry="1"   fill="#1a1040" opacity="0.7" />
-
-      {/* ── Mouth ── */}
-      <path d="M19.5 31.5 Q22 33.5 24.5 31.5" stroke="white" strokeWidth="1.2"
-        strokeLinecap="round" fill="none" opacity="0.7" />
-
-      {/* ── Cheek whisker dots ── */}
-      <circle cx="11" cy="30" r="0.9" fill="white" opacity="0.5" />
-      <circle cx="13" cy="32" r="0.9" fill="white" opacity="0.5" />
-      <circle cx="33" cy="30" r="0.9" fill="white" opacity="0.5" />
-      <circle cx="31" cy="32" r="0.9" fill="white" opacity="0.5" />
-    </svg>
-  )
-}
-
-// ─── Gradient text helper span ────────────────────────────────────────────────
-function GradText({ children }: { children: React.ReactNode }) {
-  return (
-    <span style={{
-      background:         GRADIENT,
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip:     'text',
+    <div style={{
+      width: 34, height: 34, borderRadius: 10,
+      background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: isDark ? `0 0 20px ${ACCENT_GLOW}, 0 0 60px rgba(34,211,238,0.15)` : `0 2px 12px rgba(99,102,241,0.25)`,
+      position: 'relative' as const,
+      overflow: 'hidden',
     }}>
-      {children}
-    </span>
-  )
-}
-
-// ─── Mobile Menu ──────────────────────────────────────────────────────────────
-function MobileMenu({
-  isOpen, onClose, activeSection, onNavClick, onCTAClick, isDarkMode, onThemeToggle,
-}: {
-  isOpen: boolean; onClose: () => void; activeSection: string
-  onNavClick: (href: string) => void; onCTAClick: () => void
-  isDarkMode: boolean; onThemeToggle: () => void
-}) {
-  if (!isOpen) return null
-  const t = isDarkMode ? TOKENS.dark : TOKENS.light
-
-  return (
-    <div className="fixed inset-0 z-50 md:hidden">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="absolute right-0 top-0 bottom-0 w-72 shadow-2xl"
-        style={{
-          background: t.menuBg,
-          borderLeft: `1px solid ${t.border}`,
-          animation:  'slideInRight 0.25s cubic-bezier(0.16,1,0.3,1)',
-        }}>
-        <div className="flex flex-col h-full">
-
-          {/* Panel header */}
-          <div className="flex items-center justify-between p-6"
-            style={{ borderBottom: `1px solid ${t.divider}` }}>
-            <span className="text-xs font-bold tracking-[0.22em] uppercase"
-              style={{ background: GRADIENT, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Navigate
-            </span>
-            <div className="flex items-center gap-2">
-              <button onClick={onThemeToggle} aria-label="Toggle theme"
-                className="p-2 rounded-lg" style={{ background: t.themeBtn, color: t.themeBtnText }}>
-                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-              <button onClick={onClose} aria-label="Close menu"
-                className="p-2 rounded-lg" style={{ color: t.logoSub }}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Links */}
-          <nav className="flex-1 p-5 space-y-1 overflow-y-auto">
-            {NAV_ITEMS.map(item => (
-              <button key={item.id}
-                onClick={() => { onNavClick(item.href); onClose() }}
-                className="w-full text-left px-4 py-3 rounded-xl text-sm font-medium tracking-wide transition-all"
-                style={activeSection === item.id
-                  ? { background: GRADIENT, color: '#fff' }
-                  : { color: t.navText }}>
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* CTA */}
-          <div className="p-5" style={{ borderTop: `1px solid ${t.divider}` }}>
-            <button onClick={() => { onCTAClick(); onClose() }}
-              className="w-full px-6 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
-              style={{
-                background: GRADIENT,
-                color: '#fff',
-                boxShadow: '0 4px 20px rgba(79,110,247,0.45)',
-              }}>
-              <span>Get Free Consultation</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes slideInRight {
-          from { transform: translateX(100%); opacity: 0; }
-          to   { transform: translateX(0);    opacity: 1; }
-        }
-      `}</style>
+      {/* Shine sweep animation */}
+      <div style={{
+        position: 'absolute' as const, inset: 0,
+        background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%)',
+        animation: 'logoShine 3s ease-in-out infinite',
+      }} />
+      <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', position: 'relative' as const, zIndex: 1, fontFamily: "'Syne', sans-serif" }}>P</span>
     </div>
   )
 }
 
-// ─── Main Header ──────────────────────────────────────────────────────────────
+function MobileMenu({ isOpen, onClose, activeSection, onNavClick, onCTAClick, isDark, onThemeToggle }: {
+  isOpen: boolean; onClose: () => void; activeSection: string; onNavClick: (h: string) => void
+  onCTAClick: () => void; isDark: boolean; onThemeToggle: () => void
+}) {
+  if (!isOpen) return null
+  return (
+    <div className="fixed inset-0 z-50 md:hidden">
+      <div style={{ position: 'absolute' as const, inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)' }} onClick={onClose} />
+      <div style={{
+        position: 'absolute' as const, right: 0, top: 0, bottom: 0, width: 280,
+        background: isDark ? 'rgba(10,10,15,0.95)' : 'rgba(255,255,255,0.97)',
+        borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+        backdropFilter: 'blur(20px)', animation: 'slideIn 0.25s cubic-bezier(0.16,1,0.3,1)',
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column' as const, height: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: ACCENT, fontFamily: "'JetBrains Mono', monospace" }}>MENU</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button onClick={onThemeToggle} style={{ padding: 8, borderRadius: 8, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', border: 'none', cursor: 'pointer', color: isDark ? '#a1a1aa' : '#71717a' }}>
+                {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+              </button>
+              <button onClick={onClose} style={{ padding: 8, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: isDark ? '#a1a1aa' : '#71717a' }}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          <nav style={{ flex: 1, padding: '12px 12px', display: 'flex', flexDirection: 'column' as const, gap: 2 }}>
+            {NAV_ITEMS.map(item => (
+              <button key={item.id} onClick={() => { onNavClick(item.href); onClose() }}
+                style={{
+                  padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: "'Syne', sans-serif",
+                  fontSize: 14, fontWeight: activeSection === item.id ? 700 : 500, textAlign: 'left' as const,
+                  background: activeSection === item.id ? (isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)') : 'transparent',
+                  color: activeSection === item.id ? (isDark ? '#c7d2fe' : ACCENT) : (isDark ? '#a1a1aa' : '#71717a'),
+                  transition: 'all 0.15s',
+                }}>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <div style={{ padding: '16px 16px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+            <button onClick={() => { onCTAClick(); onClose() }}
+              style={{
+                width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`, color: '#fff',
+                fontSize: 14, fontWeight: 700, fontFamily: "'Syne', sans-serif",
+                boxShadow: `0 4px 24px ${ACCENT_GLOW}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+              Get Started <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+      <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
+    </div>
+  )
+}
+
 export default function Header() {
-  const [scrollY,            setScrollY]            = useState(0)
-  const [isMobileMenuOpen,   setIsMobileMenuOpen]   = useState(false)
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
-  const [activeSection,      setActiveSection]      = useState('')
-  const [isDarkMode,         setIsDarkMode]         = useState(false)
+  const [isDark, setIsDark] = useTheme()
+  const [scrollY, setScrollY] = useState(0)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('')
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null)
 
   useEffect(() => {
-    const saved   = localStorage.getItem('theme')
-    const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    const dark    = saved === 'dark' || (!saved && sysDark)
-    setIsDarkMode(dark)
+    const saved = localStorage.getItem('theme')
+    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const dark = saved === 'dark' || (!saved && sys)
+    setIsDark(dark)
     document.documentElement.classList.toggle('dark', dark)
   }, [])
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode)
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light')
-  }, [isDarkMode])
+    document.documentElement.classList.toggle('dark', isDark)
+    localStorage.setItem('theme', isDark ? 'dark' : 'light')
+  }, [isDark])
 
   useEffect(() => {
     const handle = () => {
@@ -235,172 +136,146 @@ export default function Header() {
       const pos = window.scrollY + 100
       for (const { id } of NAV_ITEMS) {
         const el = document.getElementById(id)
-        if (el && pos >= el.offsetTop && pos < el.offsetTop + el.offsetHeight) {
-          setActiveSection(id); break
-        }
+        if (el && pos >= el.offsetTop && pos < el.offsetTop + el.offsetHeight) { setActiveSection(id); break }
       }
     }
-    window.addEventListener('scroll', handle)
-    handle()
+    window.addEventListener('scroll', handle); handle()
     return () => window.removeEventListener('scroll', handle)
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = (isMobileMenuOpen || isContactModalOpen) ? 'hidden' : ''
+    document.body.style.overflow = (mobileOpen || contactOpen) ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [isMobileMenuOpen, isContactModalOpen])
+  }, [mobileOpen, contactOpen])
 
-  const scrollToTop    = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const handleNavClick = (href: string) => {
     const el = document.querySelector(href)
-    if (el) window.scrollTo({
-      top: el.getBoundingClientRect().top + window.pageYOffset - 80,
-      behavior: 'smooth',
-    })
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 72, behavior: 'smooth' })
   }
 
-  const isScrolled = scrollY > 60
-  const t          = isDarkMode ? TOKENS.dark : TOKENS.light
+  const isScrolled = scrollY > 20
+  const headerBg = isDark
+    ? isScrolled ? 'rgba(5,5,10,0.85)' : 'rgba(5,5,10,0.5)'
+    : isScrolled ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.6)'
+  const borderBottom = isScrolled
+    ? isDark ? `1px solid rgba(99,102,241,0.15)` : `1px solid rgba(0,0,0,0.08)`
+    : `1px solid transparent`
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-500"
-        style={{
-          background:           isScrolled ? t.headerBgScrolled : t.headerBg,
-          backdropFilter:       'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom:         `1px solid ${t.border}`,
-          boxShadow:            isScrolled ? t.shadow : 'none',
-          padding:              isScrolled ? '10px 0' : '18px 0',
-        }}>
-        <div className="container mx-auto px-6 md:px-10">
-          <div className="flex items-center justify-between">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        @keyframes logoShine { 0%,100% { transform: translateX(-100%); } 50% { transform: translateX(100%); } }
+        @keyframes glowPulse { 0%,100% { box-shadow: 0 0 20px ${ACCENT_GLOW}; } 50% { box-shadow: 0 0 32px ${ACCENT_GLOW}, 0 0 60px rgba(34,211,238,0.12); } }
+      `}</style>
 
-            {/* ── Logo ── */}
-            <button onClick={scrollToTop} aria-label="Go to top"
-              className="flex items-center gap-3 focus:outline-none group">
+      <header style={{
+        position: 'fixed' as const, top: 0, left: 0, right: 0, zIndex: 40,
+        background: headerBg,
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        borderBottom,
+        boxShadow: isScrolled && isDark ? `0 1px 40px rgba(99,102,241,0.06)` : 'none',
+        transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)',
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
 
-              {/* Tiger face badge */}
-              <div className="flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-300 group-hover:scale-105 group-hover:rotate-[-4deg]"
-                style={{
-                  background: isDarkMode
-                    ? 'linear-gradient(135deg,rgba(79,110,247,0.18) 0%,rgba(196,77,232,0.18) 100%)'
-                    : 'linear-gradient(135deg,rgba(79,110,247,0.10) 0%,rgba(196,77,232,0.10) 100%)',
-                  boxShadow: isDarkMode
-                    ? '0 2px 18px rgba(196,77,232,0.35)'
-                    : '0 2px 14px rgba(79,110,247,0.22)',
-                  border: `1.5px solid ${isDarkMode ? 'rgba(196,77,232,0.28)' : 'rgba(79,110,247,0.20)'}`,
-                }}>
-                <TigerFaceLogo />
-              </div>
+          {/* Logo */}
+          <button onClick={scrollToTop} aria-label="Home" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <LogoMark isDark={isDark} />
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 0 }}>
+              <span style={{ fontSize: 17, fontWeight: 800, color: isDark ? '#fafafa' : '#09090b', fontFamily: "'Syne', sans-serif", letterSpacing: '-0.03em' }}>papa</span>
+              <span style={{
+                fontSize: 17, fontWeight: 800, fontFamily: "'Syne', sans-serif", letterSpacing: '-0.03em',
+                background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`,
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              }}>tiger</span>
+              <span style={{ fontSize: 11, fontWeight: 500, color: isDark ? '#52525b' : '#a1a1aa', marginLeft: 2 }}>.tech</span>
+            </div>
+          </button>
 
-              {/* Wordmark: "papa" in normal color, "tiger" in gradient */}
-              <div className="flex flex-col leading-none select-none">
-                <span className="text-[18px] font-bold transition-colors"
-                  style={{
-                    fontFamily:    "'Georgia','Times New Roman',serif",
-                    letterSpacing: '-0.015em',
-                    color:         t.logoText,   // "papa" part
-                  }}>
-                  papa<GradText>tiger</GradText>
-                </span>
-                <span className="text-[9px] font-semibold tracking-[0.3em] uppercase mt-0.5"
-                  style={{ color: t.logoSub }}>
-                  .tech
-                </span>
-              </div>
-            </button>
-
-            {/* ── Desktop nav ── */}
-            <nav className="hidden md:flex items-center gap-1">
-              {NAV_ITEMS.map(item => (
+          {/* Desktop Nav */}
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }} className="hidden md:flex">
+            {NAV_ITEMS.map(item => {
+              const isActive = activeSection === item.id
+              const isHovered = hoveredNav === item.id
+              return (
                 <button key={item.id}
                   onClick={() => handleNavClick(item.href)}
-                  aria-label={`Navigate to ${item.label}`}
-                  className="relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none"
-                  style={{ color: activeSection === item.id ? t.navActive : t.navText }}>
+                  onMouseEnter={() => setHoveredNav(item.id)}
+                  onMouseLeave={() => setHoveredNav(null)}
+                  style={{
+                    position: 'relative' as const,
+                    padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                    fontSize: 13, fontWeight: 600, fontFamily: "'Syne', sans-serif",
+                    background: (isActive || isHovered) ? (isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.06)') : 'transparent',
+                    color: isActive ? (isDark ? '#c7d2fe' : ACCENT) : isHovered ? (isDark ? '#e2e8f0' : '#09090b') : (isDark ? '#71717a' : '#71717a'),
+                    transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)',
+                    transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
+                  }}>
                   {item.label}
-                  {/* gradient underline for active */}
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-[2px] rounded-full transition-all duration-300"
-                    style={{
-                      width:      activeSection === item.id ? '55%' : '0%',
-                      background: GRADIENT,
-                    }} />
+                  {/* Glow dot for active */}
+                  {isActive && <span style={{
+                    position: 'absolute' as const, bottom: 2, left: '50%', transform: 'translateX(-50%)',
+                    width: 4, height: 4, borderRadius: '50%', background: ACCENT,
+                    boxShadow: `0 0 8px ${ACCENT_GLOW}`,
+                  }} />}
                 </button>
-              ))}
+              )
+            })}
 
-              {/* Divider */}
-              <div className="w-px h-5 mx-1" style={{ background: t.divider }} />
+            <div style={{ width: 1, height: 20, margin: '0 8px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
 
-              {/* Theme toggle */}
-              <button onClick={() => setIsDarkMode(d => !d)} aria-label="Toggle theme"
-                className="p-2.5 rounded-lg transition-all duration-200 focus:outline-none"
-                style={{ background: t.themeBtn, color: t.themeBtnText }}>
-                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
+            {/* Theme toggle */}
+            <button onClick={() => setIsDark(d => !d)} aria-label="Toggle theme"
+              style={{
+                padding: 8, borderRadius: 8, border: 'none', cursor: 'pointer',
+                background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                color: isDark ? '#a1a1aa' : '#71717a',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'rotate(20deg)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'; e.currentTarget.style.transform = 'rotate(0)' }}>
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
 
-              {/* CTA — matches the "Get a Free Consultation" button in screenshot */}
-              <button
-                onClick={() => setIsContactModalOpen(true)}
-                aria-label="Get free consultation"
-                className="ml-2 px-5 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 transition-all duration-300 focus:outline-none group"
-                style={{
-                  background:   GRADIENT,
-                  color:        '#fff',
-                  letterSpacing:'0.03em',
-                  boxShadow:    isDarkMode
-                    ? '0 2px 18px rgba(79,110,247,0.45)'
-                    : '0 2px 14px rgba(79,110,247,0.35)',
-                }}
-                onMouseEnter={e => {
-                  const b = e.currentTarget as HTMLButtonElement
-                  b.style.boxShadow = '0 6px 26px rgba(196,77,232,0.55)'
-                  b.style.transform = 'translateY(-1px)'
-                  b.style.opacity   = '0.92'
-                }}
-                onMouseLeave={e => {
-                  const b = e.currentTarget as HTMLButtonElement
-                  b.style.boxShadow = isDarkMode
-                    ? '0 2px 18px rgba(79,110,247,0.45)'
-                    : '0 2px 14px rgba(79,110,247,0.35)'
-                  b.style.transform = 'translateY(0)'
-                  b.style.opacity   = '1'
-                }}>
-                <span>Get Free Consultation</span>
-                <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-              </button>
-            </nav>
+            {/* CTA */}
+            <button onClick={() => setContactOpen(true)}
+              style={{
+                marginLeft: 8, padding: '9px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`,
+                color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: "'Syne', sans-serif",
+                boxShadow: `0 2px 20px ${ACCENT_GLOW}`,
+                display: 'flex', alignItems: 'center', gap: 5,
+                transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.boxShadow = `0 4px 32px ${ACCENT_GLOW}, 0 0 60px rgba(34,211,238,0.2)`
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = `0 2px 20px ${ACCENT_GLOW}`
+                e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              }}>
+              Get Started <ChevronRight className="w-3 h-3" />
+            </button>
+          </nav>
 
-            {/* ── Mobile controls ── */}
-            <div className="flex items-center gap-2 md:hidden">
-              <button onClick={() => setIsDarkMode(d => !d)} aria-label="Toggle theme"
-                className="p-2 rounded-lg" style={{ background: t.themeBtn, color: t.themeBtnText }}>
-                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-              <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu"
-                className="p-2 rounded-lg" style={{ color: t.navText }}>
-                <Menu className="w-5 h-5" />
-              </button>
-            </div>
-
+          {/* Mobile */}
+          <div className="flex md:hidden" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            <button onClick={() => setIsDark(d => !d)} style={{ padding: 8, borderRadius: 8, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', border: 'none', cursor: 'pointer', color: isDark ? '#a1a1aa' : '#71717a' }}>
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button onClick={() => setMobileOpen(true)} style={{ padding: 8, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: isDark ? '#a1a1aa' : '#71717a' }}>
+              <Menu className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </header>
 
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        activeSection={activeSection}
-        onNavClick={handleNavClick}
-        onCTAClick={() => setIsContactModalOpen(true)}
-        isDarkMode={isDarkMode}
-        onThemeToggle={() => setIsDarkMode(d => !d)}
-      />
-
-      <ContactModal
-        isOpen={isContactModalOpen}
-        onClose={() => setIsContactModalOpen(false)}
-      />
+      <MobileMenu isOpen={mobileOpen} onClose={() => setMobileOpen(false)} activeSection={activeSection} onNavClick={handleNavClick} onCTAClick={() => setContactOpen(true)} isDark={isDark} onThemeToggle={() => setIsDark(d => !d)} />
+      <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
     </>
   )
 }

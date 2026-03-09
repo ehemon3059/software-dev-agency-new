@@ -1,264 +1,100 @@
 'use client'
 
-import { AlertTriangle, Clock, RefreshCw } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useState, useEffect, useRef, RefObject } from 'react'
 
-const problemCards = [
-  {
-    id: 1,
-    icon: AlertTriangle,
-    title: "Stuck with Broken Software",
-    problem: "Your current system is buggy, slow, or built by developers who disappeared. Every fix creates new problems.",
-    solution: "We audit your codebase, fix critical bugs, optimize performance, and document everything - so you're never stuck again.",
-    iconBgLight: "bg-red-100",
-    iconBgDark: "bg-red-900/50",
-    iconColorLight: "text-red-600",
-    iconColorDark: "text-red-400",
-  },
-  {
-    id: 2,
-    icon: Clock,
-    title: "Need an MVP Fast (But Right)",
-    problem: "You have funding and a deadline. You need a working product in 4-8 weeks, but can't afford technical debt.",
-    solution: "We build production-ready MVPs with clean architecture - ready to scale when you grow, not crumble under pressure.",
-    iconBgLight: "bg-blue-100",
-    iconBgDark: "bg-blue-900/50",
-    iconColorLight: "text-blue-600",
-    iconColorDark: "text-blue-400",
-  },
-  {
-    id: 3,
-    icon: RefreshCw,
-    title: "Outdated Legacy Systems",
-    problem: "Your PHP/WordPress site is holding you back. It's slow, insecure, and impossible to add new features.",
-    solution: "We modernize legacy systems with modern frameworks - keeping your data, improving everything else.",
-    iconBgLight: "bg-purple-100",
-    iconBgDark: "bg-purple-900/50",
-    iconColorLight: "text-purple-600",
-    iconColorDark: "text-purple-400",
-  }
+const ACCENT = '#6366f1'
+const CYAN = '#22d3ee'
+
+const problems = [
+  { id: 'broken', num: '01', title: 'Stuck with broken software', problem: "Your current system is buggy, slow, or built by developers who disappeared. Every fix creates new problems.", solution: "We audit your codebase, fix critical bugs, optimize performance, and document everything — so you're never stuck again." },
+  { id: 'mvp', num: '02', title: 'Need an MVP fast (but right)', problem: "You have funding and a deadline. You need a working product in 4–8 weeks, but can't afford technical debt.", solution: "We build production-ready MVPs with clean architecture — ready to scale when you grow, not crumble under pressure." },
+  { id: 'legacy', num: '03', title: 'Outdated legacy systems', problem: "Your PHP/WordPress site is holding you back. It's slow, insecure, and impossible to add new features.", solution: "We modernize legacy systems with modern frameworks — keeping your data, improving everything else." },
 ]
 
-// Animated gradient waves background
-function GradientWaves({ isDarkMode }: { isDarkMode: boolean }) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const animationRef = useRef<number | null>(null)
-  const timeRef = useRef(0)
+function useInView(th: number = 0.1): [RefObject<HTMLDivElement | null>, boolean] {
+  const ref = useRef<HTMLDivElement | null>(null); const [v, setV] = useState(false)
+  useEffect(() => { const el = ref.current; if (!el) return; const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) setV(true) }, { threshold: th }); o.observe(el); return () => o.disconnect() }, [th])
+  return [ref, v]
+}
+function useTheme() { const [d, setD] = useState(true); useEffect(() => { const c = () => setD(document.documentElement.classList.contains('dark')); c(); const o = new MutationObserver(c); o.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); return () => o.disconnect() }, []); return d }
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext('2d')
-    
-    const resizeCanvas = () => {
-      canvas.width = canvas.offsetWidth
-      canvas.height = canvas.offsetHeight
-    }
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
-
-    function animate() {
-      timeRef.current += 0.01
-      
-      if (ctx && canvas) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-        // Draw multiple wave layers with dark mode colors
-        const waves = isDarkMode
-          ? [
-              { amplitude: 30, frequency: 0.02, speed: 0.5, opacity: 0.15, color: '129, 140, 248' }, // indigo-400
-              { amplitude: 40, frequency: 0.015, speed: 0.7, opacity: 0.12, color: '167, 139, 250' }, // purple-400
-              { amplitude: 35, frequency: 0.025, speed: 0.4, opacity: 0.1, color: '96, 165, 250' },   // blue-400
-            ]
-          : [
-              { amplitude: 30, frequency: 0.02, speed: 0.5, opacity: 0.1, color: '99, 102, 241' },   // indigo-500
-              { amplitude: 40, frequency: 0.015, speed: 0.7, opacity: 0.08, color: '139, 92, 246' },  // purple-500
-              { amplitude: 35, frequency: 0.025, speed: 0.4, opacity: 0.06, color: '59, 130, 246' },   // blue-500
-            ]
-
-        waves.forEach((wave) => {
-          ctx.beginPath()
-          ctx.moveTo(0, canvas.height / 2)
-
-          for (let x = 0; x < canvas.width; x++) {
-            const y = canvas.height / 2 + 
-                      Math.sin(x * wave.frequency + timeRef.current * wave.speed) * wave.amplitude +
-                      Math.sin(x * wave.frequency * 0.5 + timeRef.current * wave.speed * 1.5) * wave.amplitude * 0.5
-            ctx.lineTo(x, y)
-          }
-
-          ctx.lineTo(canvas.width, canvas.height)
-          ctx.lineTo(0, canvas.height)
-          ctx.closePath()
-
-          const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-          gradient.addColorStop(0, `rgba(${wave.color}, ${wave.opacity})`)
-          gradient.addColorStop(1, `rgba(${wave.color}, 0)`)
-          
-          ctx.fillStyle = gradient
-          ctx.fill()
-        })
-      }
-
-      animationRef.current = requestAnimationFrame(animate)
-    }
-
-    animate()
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas)
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
-    }
-  }, [isDarkMode])
+function Card({ item, i, anim, isDark }: { item: typeof problems[0]; i: number; anim: boolean; isDark: boolean }) {
+  const [h, setH] = useState(false)
+  const tp = isDark ? '#fafafa' : '#09090b'
+  const ts = isDark ? '#a1a1aa' : '#71717a'
+  const tt = isDark ? '#52525b' : '#a1a1aa'
+  const bd = isDark ? h ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.06)' : h ? 'rgba(99,102,241,0.2)' : 'rgba(0,0,0,0.06)'
+  const bg = isDark ? h ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)' : h ? 'rgba(0,0,0,0.025)' : 'rgba(0,0,0,0.01)'
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none"
-    />
+    <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+      style={{
+        padding: '32px 28px', borderRadius: 16, border: `1px solid ${bd}`, background: bg,
+        transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)',
+        transform: anim ? h ? 'translateY(-5px)' : 'translateY(0)' : 'translateY(28px)',
+        opacity: anim ? 1 : 0, transitionDelay: `${i * 100}ms`,
+        boxShadow: h && isDark ? `0 12px 48px rgba(0,0,0,0.4), 0 0 40px rgba(99,102,241,0.08)` : h ? '0 8px 32px rgba(0,0,0,0.08)' : 'none',
+        position: 'relative' as const, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column' as const, gap: 24,
+      }}>
+      {/* Top glow line */}
+      <div style={{ position: 'absolute' as const, top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${ACCENT}, ${CYAN})`, opacity: h ? 0.8 : 0, transition: 'opacity 0.3s' }} />
+
+      <div>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: tt, fontFamily: "'JetBrains Mono', monospace" }}>{item.num}</span>
+        <h3 style={{ fontSize: 20, fontWeight: 700, color: tp, lineHeight: 1.25, margin: '8px 0 0', letterSpacing: '-0.02em', fontFamily: "'Syne', sans-serif" }}>{item.title}</h3>
+      </div>
+
+      {/* Problem */}
+      <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: isDark ? '#f87171' : '#ef4444', boxShadow: isDark ? '0 0 10px rgba(248,113,113,0.4)' : 'none', flexShrink: 0, marginTop: 6 }} />
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: isDark ? '#f87171' : '#ef4444', letterSpacing: 1, marginBottom: 4, fontFamily: "'JetBrains Mono', monospace" }}>THE PROBLEM</div>
+          <p style={{ fontSize: 14, color: ts, lineHeight: 1.6, margin: 0 }}>{item.problem}</p>
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }} />
+
+      {/* Solution */}
+      <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: isDark ? '#34d399' : '#10b981', boxShadow: isDark ? '0 0 10px rgba(52,211,153,0.4)' : 'none', flexShrink: 0, marginTop: 6 }} />
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: isDark ? '#34d399' : '#10b981', letterSpacing: 1, marginBottom: 4, fontFamily: "'JetBrains Mono', monospace" }}>OUR SOLUTION</div>
+          <p style={{ fontSize: 14, color: ts, lineHeight: 1.6, margin: 0 }}>{item.solution}</p>
+        </div>
+      </div>
+    </div>
   )
 }
 
 export default function ProblemSolution() {
-  const [isVisible, setIsVisible] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const sectionRef = useRef(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '50px'
-      }
-    )
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    // Check for dark mode on mount and when it changes
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark')
-      setIsDarkMode(isDark)
-    }
-
-    // Initial check
-    checkDarkMode()
-
-    // Create an observer to watch for class changes on html element
-    const mutationObserver = new MutationObserver(checkDarkMode)
-    mutationObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    })
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
-      }
-      mutationObserver.disconnect()
-    }
-  }, [])
+  const isDark = useTheme()
+  const [hRef, hIn] = useInView(0.1)
+  const [gRef, gIn] = useInView(0.05)
+  const bg = isDark ? '#050508' : '#fafafa'
+  const tp = isDark ? '#fafafa' : '#09090b'
+  const ts = isDark ? '#a1a1aa' : '#71717a'
+  const bd = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'
+  const cb = isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
 
   return (
-    <section 
-      ref={sectionRef}
-      className={`py-20 transition-colors duration-300 relative overflow-hidden ${
-        isDarkMode 
-          ? 'bg-gradient-to-b from-slate-900 to-slate-800' 
-          : 'bg-gradient-to-b from-gray-50 to-white'
-      }`}
-    >
-      {/* Animated gradient waves background */}
-      {isVisible && <GradientWaves isDarkMode={isDarkMode} />}
-      
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        {/* Section Title */}
-        <div className="text-center mb-12">
-          <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            Common Problems We Solve
-          </h2>
-          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
-            isDarkMode ? 'text-slate-400' : 'text-gray-600'
-          }`}>
-            We specialize in turning development challenges into scalable solutions
-          </p>
+    <section id="problems" style={{ padding: '96px 0', background: bg, fontFamily: "'Syne', sans-serif", position: 'relative' as const, overflow: 'hidden' }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');`}</style>
+      <div style={{ position: 'absolute' as const, top: '40%', left: '50%', transform: 'translate(-50%,-50%)', width: 600, height: 600, borderRadius: '50%', background: `radial-gradient(circle, ${isDark ? 'rgba(99,102,241,0.05)' : 'rgba(99,102,241,0.03)'}, transparent 70%)`, filter: 'blur(40px)', pointerEvents: 'none' as const }} />
+
+      <div style={{ position: 'relative' as const, zIndex: 1, maxWidth: 1100, margin: '0 auto', padding: '0 24px' }}>
+        <div ref={hRef} style={{ textAlign: 'center' as const, marginBottom: 56, opacity: hIn ? 1 : 0, transform: hIn ? 'translateY(0)' : 'translateY(24px)', transition: 'all 0.7s cubic-bezier(0.16,1,0.3,1)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, border: `1px solid ${bd}`, background: cb, marginBottom: 24, fontSize: 12, fontWeight: 600, color: ts }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            Sound familiar?
+          </div>
+          <h2 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, color: tp, lineHeight: 1.05, margin: '0 0 14px', letterSpacing: '-0.04em' }}>Problems we solve</h2>
+          <p style={{ fontSize: 17, color: ts, maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>Three challenges we see most — and exactly how we fix them.</p>
         </div>
 
-        {/* Three Cards Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {problemCards.map((card) => (
-            <div
-              key={card.id}
-              className={`group relative rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 ${
-                isDarkMode
-                  ? 'bg-slate-800 border border-slate-700 hover:border-slate-600 hover:shadow-lg hover:shadow-slate-900/50'
-                  : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg'
-              }`}
-            >
-              {/* Icon */}
-              <div className={`${isDarkMode ? card.iconBgDark : card.iconBgLight} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
-                <card.icon className={`w-6 h-6 ${isDarkMode ? card.iconColorDark : card.iconColorLight}`} />
-              </div>
-
-              {/* Title */}
-              <h3 className={`text-xl font-bold mb-4 transition-colors duration-300 ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                {card.title}
-              </h3>
-
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full" aria-hidden="true" />
-                  <span className={`text-sm font-semibold transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-300' : 'text-gray-700'
-                  }`}>
-                    The Problem:
-                  </span>
-                </div>
-                <p className={`transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-300' : 'text-gray-800'
-                }`}>
-                  {card.problem}
-                </p>
-              </div>
-
-              {/* Solution Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span className={`text-sm font-semibold transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-300' : 'text-gray-700'
-                  }`}>
-                    Our Solution:
-                  </span>
-                </div>
-                <p className={`transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-300' : 'text-gray-800'
-                }`}>
-                  {card.solution}
-                </p>
-              </div>
-
-              {/* Subtle hover effect border */}
-              <div className={`absolute inset-0 border-2 rounded-xl pointer-events-none transition-colors duration-300 ${
-                isDarkMode
-                  ? 'border-transparent group-hover:border-slate-700'
-                  : 'border-transparent group-hover:border-gray-100'
-              }`} />
-            </div>
-          ))}
+        <div ref={gRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+          {problems.map((p, i) => <Card key={p.id} item={p} i={i} anim={gIn} isDark={isDark} />)}
         </div>
       </div>
     </section>

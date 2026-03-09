@@ -1,437 +1,167 @@
 'use client'
 
-import { 
-  Code2, 
-  RefreshCw, 
-  Cpu, 
-  Cloud, 
-  Monitor, 
-  Zap, 
-  CheckCircle,
-  Clock
-} from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useState, useEffect, useRef, RefObject } from 'react'
 
-// Animated geometric grid background
-function GeometricGrid({ isDarkMode }: { isDarkMode: boolean }) {
-  const canvasRef = useRef(null)
-  const animationRef = useRef<number | null>(null)
-  const timeRef = useRef(0)
+const ACCENT = '#6366f1'; const CYAN = '#22d3ee'
 
-  useEffect(() => {
-    const canvas = canvasRef.current as unknown as HTMLCanvasElement
-    if (!canvas) return
+const primary = [
+  { id: 'build', num: '01', title: 'Custom Web Application Development', desc: 'Full-stack web apps designed, built, and deployed from scratch.',
+    items: ['Full-stack web applications', 'Business dashboards & internal tools', 'SaaS platforms & multi-user systems', 'Database-driven apps with role-based access'],
+    outcome: 'A production-ready system that scales with your business.', timeline: '4–12 weeks',
+    stack: ['React', 'Next.js', 'Node.js', 'PostgreSQL'] },
+  { id: 'fix', num: '02', title: 'Existing Application Fix & Upgrade', desc: 'Audit, fix, modernize, and document your existing software.',
+    items: ['Bug fixing & performance optimization', 'Legacy system modernization', 'Security improvements & code audits', 'Feature upgrades & tech debt cleanup'],
+    outcome: 'Your system runs faster, more securely, and is maintainable long-term.', timeline: '2–8 weeks',
+    stack: ['Code Audit', 'Security', 'Performance', 'Docs'] },
+]
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    
-    const resizeCanvas = () => {
-      canvas.width = canvas.offsetWidth
-      canvas.height = canvas.offsetHeight
-    }
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
+const secondary = [
+  { id: 'api', title: 'API Development', desc: 'RESTful APIs, authentication, database integration' },
+  { id: 'devops', title: 'Deployment & DevOps', desc: 'Docker, cloud deployment, CI/CD pipelines' },
+  { id: 'desktop', title: 'Desktop Applications', desc: 'Cross-platform apps with Electron.js' },
+]
 
-    // Create grid points
-    const gridSize = 60
-    const dots: { baseX: number; baseY: number; phase: number }[] = []
-    
-    for (let x = 0; x < canvas.width; x += gridSize) {
-      for (let y = 0; y < canvas.height; y += gridSize) {
-        dots.push({
-          baseX: x,
-          baseY: y,
-          phase: Math.random() * Math.PI * 2
-        })
-      }
-    }
+function useInView(th: number = 0.08): [RefObject<HTMLDivElement | null>, boolean] {
+  const ref = useRef<HTMLDivElement | null>(null); const [v, setV] = useState(false)
+  useEffect(() => { const el = ref.current; if (!el) return; const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) setV(true) }, { threshold: th }); o.observe(el); return () => o.disconnect() }, [th]); return [ref, v]
+}
+function useTheme() { const [d, setD] = useState(true); useEffect(() => { const c = () => setD(document.documentElement.classList.contains('dark')); c(); const o = new MutationObserver(c); o.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); return () => o.disconnect() }, []); return d }
 
-    function animate() {
-      if (!ctx) return
-      
-      timeRef.current += 0.02
-      
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      // Use different colors for dark mode
-      const dotColor = isDarkMode ? '96, 165, 250' : '59, 130, 246' // blue-400 for dark, blue-500 for light
-      const lineColor = isDarkMode ? '96, 165, 250' : '59, 130, 246'
-
-      // Draw dots with floating animation
-      dots.forEach((dot) => {
-        const offsetX = Math.sin(timeRef.current + dot.phase) * 3
-        const offsetY = Math.cos(timeRef.current * 0.8 + dot.phase) * 3
-        const opacity = 0.15 + Math.sin(timeRef.current * 0.5 + dot.phase) * 0.1
-
-        ctx.fillStyle = `rgba(${dotColor}, ${opacity})`
-        ctx.beginPath()
-        ctx.arc(dot.baseX + offsetX, dot.baseY + offsetY, 2, 0, Math.PI * 2)
-        ctx.fill()
-      })
-
-      // Draw connecting lines
-      dots.forEach((dot1, i) => {
-        dots.slice(i + 1).forEach((dot2) => {
-          const dx = dot1.baseX - dot2.baseX
-          const dy = dot1.baseY - dot2.baseY
-          const distance = Math.sqrt(dx * dx + dy * dy)
-
-          if (distance < gridSize * 1.5) {
-            const opacity = (0.08 * (1 - distance / (gridSize * 1.5))) * 
-                          (1 + Math.sin(timeRef.current * 0.3) * 0.3)
-            ctx.strokeStyle = `rgba(${lineColor}, ${opacity})`
-            ctx.lineWidth = 1
-            ctx.beginPath()
-            
-            const offset1X = Math.sin(timeRef.current + dot1.phase) * 3
-            const offset1Y = Math.cos(timeRef.current * 0.8 + dot1.phase) * 3
-            const offset2X = Math.sin(timeRef.current + dot2.phase) * 3
-            const offset2Y = Math.cos(timeRef.current * 0.8 + dot2.phase) * 3
-            
-            ctx.moveTo(dot1.baseX + offset1X, dot1.baseY + offset1Y)
-            ctx.lineTo(dot2.baseX + offset2X, dot2.baseY + offset2Y)
-            ctx.stroke()
-          }
-        })
-      })
-
-      animationRef.current = requestAnimationFrame(animate)
-    }
-
-    animate()
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas)
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-      }
-    }
-  }, [isDarkMode])
+function ServiceCard({ s, i, anim, isDark }: { s: typeof primary[0]; i: number; anim: boolean; isDark: boolean }) {
+  const [h, setH] = useState(false)
+  const tp = isDark ? '#fafafa' : '#09090b'; const ts = isDark ? '#a1a1aa' : '#71717a'; const tt = isDark ? '#52525b' : '#a1a1aa'
+  const bd = isDark ? h ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.06)' : h ? 'rgba(99,102,241,0.2)' : 'rgba(0,0,0,0.06)'
+  const bg = isDark ? h ? 'rgba(255,255,255,0.035)' : 'rgba(255,255,255,0.015)' : h ? 'rgba(0,0,0,0.025)' : 'rgba(0,0,0,0.01)'
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none"
-    />
+    <div onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+      style={{
+        padding: '36px 30px', borderRadius: 16, border: `1px solid ${bd}`, background: bg,
+        transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)',
+        transform: anim ? h ? 'translateY(-4px)' : 'translateY(0)' : 'translateY(28px)',
+        opacity: anim ? 1 : 0, transitionDelay: `${i * 120}ms`,
+        boxShadow: h && isDark ? `0 12px 48px rgba(0,0,0,0.4), 0 0 40px rgba(99,102,241,0.06)` : 'none',
+        position: 'relative' as const, overflow: 'hidden', display: 'flex', flexDirection: 'column' as const,
+      }}>
+      {/* Gradient top line */}
+      <div style={{ position: 'absolute' as const, top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${ACCENT}, ${CYAN})`, opacity: h ? 0.9 : 0.15, transition: 'opacity 0.3s' }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: tt, fontFamily: "'JetBrains Mono', monospace" }}>{s.num}</span>
+        <div style={{ height: 1, flex: 1, background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }} />
+        <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`, color: '#fff', fontFamily: "'JetBrains Mono', monospace" }}>Primary</span>
+      </div>
+
+      <h3 style={{ fontSize: 21, fontWeight: 700, color: tp, lineHeight: 1.25, margin: '0 0 8px', letterSpacing: '-0.02em', fontFamily: "'Syne', sans-serif" }}>{s.title}</h3>
+      <p style={{ fontSize: 14, color: ts, lineHeight: 1.5, margin: '0 0 20px' }}>{s.desc}</p>
+
+      {/* Tech */}
+      <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6, marginBottom: 24 }}>
+        {s.stack.map(t => (
+          <span key={t} style={{
+            padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+            color: isDark ? '#c7d2fe' : ACCENT,
+            background: isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.06)',
+            border: `1px solid ${isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.15)'}`,
+            fontFamily: "'JetBrains Mono', monospace",
+          }}>{t}</span>
+        ))}
+      </div>
+
+      {/* Items */}
+      <div style={{ marginBottom: 24, flex: 1 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: tt, marginBottom: 12, fontFamily: "'JetBrains Mono', monospace" }}>WHAT YOU GET</div>
+        {s.items.map((item, j) => (
+          <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <div style={{ width: 18, height: 18, borderRadius: 6, background: isDark ? 'rgba(34,211,238,0.1)' : 'rgba(34,211,238,0.08)', border: `1px solid ${isDark ? 'rgba(34,211,238,0.2)' : 'rgba(34,211,238,0.15)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={CYAN} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            </div>
+            <span style={{ fontSize: 14, color: ts, lineHeight: 1.4 }}>{item}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Outcome + Timeline */}
+      <div style={{ paddingTop: 20, borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}` }}>
+        <p style={{ fontSize: 14, color: ts, lineHeight: 1.6, margin: '0 0 14px' }}><span style={{ color: tp, fontWeight: 700 }}>Outcome: </span>{s.outcome}</p>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 999, background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={tt} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+          <span style={{ fontSize: 13, fontWeight: 700, color: tp, fontFamily: "'JetBrains Mono', monospace" }}>{s.timeline}</span>
+        </div>
+      </div>
+    </div>
   )
 }
 
 export default function ServicesSection() {
-  const [isVisible, setIsVisible] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const sectionRef = useRef(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '50px'
-      }
-    )
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    // Check for dark mode on mount and when it changes
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark')
-      setIsDarkMode(isDark)
-    }
-
-    // Initial check
-    checkDarkMode()
-
-    // Create an observer to watch for class changes on html element
-    const themeObserver = new MutationObserver(checkDarkMode)
-    themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    })
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
-      }
-      themeObserver.disconnect()
-    }
-  }, [])
-
-  const primaryServices = [
-    {
-      icon: Code2,
-      title: "Custom Web Application Development",
-      bulletPoints: [
-        "Full-stack web applications built from scratch",
-        "Business dashboards and internal tools",
-        "SaaS platforms and multi-user systems",
-        "Database-driven applications with role-based access"
-      ],
-      outcome: "A production-ready system that works reliably from day one and scales with your business.",
-      timeline: "4-12 weeks",
-      color: "blue",
-      techStack: ["React", "Next.js", "Node.js", "PostgreSQL"]
-    },
-    {
-      icon: RefreshCw,
-      title: "Existing Application Fix & Upgrade",
-      bulletPoints: [
-        "Bug fixing and performance optimization",
-        "Legacy system modernization (PHP, WordPress, old frameworks)",
-        "Security improvements and code audits",
-        "Feature upgrades and technical debt cleanup"
-      ],
-      outcome: "Your existing system runs faster, more securely, and is maintainable for the long term.",
-      timeline: "2-8 weeks",
-      color: "green",
-      techStack: ["Code Audit", "Security Updates", "Performance Optimization", "Documentation"]
-    }
-  ]
-
-  const secondaryServices = [
-    {
-      icon: Cpu,
-      title: "API Development",
-      description: "RESTful APIs, authentication, database integration",
-      color: "purple"
-    },
-    {
-      icon: Cloud,
-      title: "Deployment & DevOps",
-      description: "VPS setup, Docker, cloud deployment, CI/CD",
-      color: "blue"
-    },
-    {
-      icon: Monitor,
-      title: "Desktop Applications",
-      description: "Cross-platform apps using Electron.js",
-      color: "amber"
-    }
-  ]
+  const isDark = useTheme()
+  const [hRef, hIn] = useInView(0.1); const [pRef, pIn] = useInView(0.05); const [sRef, sIn] = useInView(0.05)
+  const bg = isDark ? '#050508' : '#ffffff'
+  const tp = isDark ? '#fafafa' : '#09090b'; const ts = isDark ? '#a1a1aa' : '#71717a'; const tt = isDark ? '#52525b' : '#a1a1aa'
+  const bd = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'
+  const cb = isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
+  const grid = isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.025)'
 
   return (
-    <section 
-      ref={sectionRef}
-      className={`py-20 transition-colors duration-300 relative overflow-hidden ${
-        isDarkMode ? 'bg-slate-900' : 'bg-gray-50'
-      }`} 
-      id="services"
-    >
-      {/* Animated geometric grid background */}
-      {isVisible && <GeometricGrid isDarkMode={isDarkMode} />}
+    <section id="services" style={{ padding: '96px 0', background: bg, fontFamily: "'Syne', sans-serif", position: 'relative' as const, overflow: 'hidden' }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');`}</style>
+      {/* Grid bg */}
+      <div style={{ position: 'absolute' as const, inset: 0, backgroundImage: `linear-gradient(${grid} 1px, transparent 1px), linear-gradient(90deg, ${grid} 1px, transparent 1px)`, backgroundSize: '72px 72px', maskImage: 'radial-gradient(ellipse 50% 40% at 50% 30%, black 20%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 50% 40% at 50% 30%, black 20%, transparent 100%)', pointerEvents: 'none' as const }} />
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        {/* Section Title */}
-        <div className="text-center mb-16">
-          <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
-            isDarkMode ? 'text-white' : 'text-gray-900'
-          }`}>
-            What We Do Best
-          </h2>
-          <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
-            isDarkMode ? 'text-slate-400' : 'text-gray-600'
-          }`}>
-            Professional software solutions tailored to your business needs
-          </p>
-        </div>
-
-        {/* Primary Services - Side by Side Cards */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          {primaryServices.map((service, index) => (
-            <div 
-              key={index}
-              className={`rounded-xl p-8 transition-all duration-300 ${
-                isDarkMode
-                  ? 'bg-slate-800 border border-slate-700 hover:border-slate-600 hover:shadow-lg hover:shadow-slate-900/50'
-                  : 'bg-white border border-gray-200 hover:shadow-lg hover:border-gray-300'
-              }`}
-            >
-              {/* Icon and Title */}
-              <div className="flex items-start gap-4 mb-6">
-                <div className={`w-14 h-14 ${getColorClass(service.color, isDarkMode).bg} rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-300`}>
-                  <service.icon className={`w-7 h-7 ${getColorClass(service.color, isDarkMode).text}`} />
-                </div>
-                <div>
-                  <h3 className={`text-xl md:text-2xl font-bold mb-2 transition-colors duration-300 ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {service.title}
-                  </h3>
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium transition-colors duration-300 ${
-                    isDarkMode
-                      ? 'bg-slate-700 text-slate-300'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    <Zap className="w-4 h-4" />
-                    <span>Primary Service</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tech Stack Tags */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                {service.techStack.map((tech, idx) => (
-                  <span 
-                    key={idx}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors duration-300 ${
-                      isDarkMode
-                        ? 'bg-slate-700 text-slate-300'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-
-              {/* What You Get */}
-              <div className="mb-6">
-                <h4 className={`text-lg font-semibold mb-3 transition-colors duration-300 ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>
-                  What You Get:
-                </h4>
-                <ul className="space-y-3">
-                  {service.bulletPoints.map((point, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <CheckCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 transition-colors duration-300 ${
-                        isDarkMode ? 'text-green-400' : 'text-green-500'
-                      }`} />
-                      <span className={`transition-colors duration-300 ${
-                        isDarkMode ? 'text-slate-300' : 'text-gray-700'
-                      }`}>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Outcome and Timeline */}
-              <div className={`pt-6 border-t transition-colors duration-300 ${
-                isDarkMode ? 'border-slate-700' : 'border-gray-200'
-              }`}>
-                <p className={`mb-4 transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-300' : 'text-gray-800'
-                }`}>
-                  <strong className="font-semibold">Outcome:</strong> {service.outcome}
-                </p>
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-300 ${
-                  isDarkMode ? 'bg-slate-700' : 'bg-gray-100'
-                }`}>
-                  <Clock className={`w-4 h-4 transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-400' : 'text-gray-600'
-                  }`} />
-                  <span className={`font-medium transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-300' : 'text-gray-700'
-                  }`}>
-                    Timeline: {service.timeline}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Secondary Services */}
-        <div className="mb-16">
-          <div className="text-center mb-8">
-            <h3 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              We Also Provide
-            </h3>
-            <p className={`transition-colors duration-300 ${
-              isDarkMode ? 'text-slate-400' : 'text-gray-600'
-            }`}>
-              Additional specialized services to complement your project
-            </p>
+      <div style={{ position: 'relative' as const, zIndex: 1, maxWidth: 1100, margin: '0 auto', padding: '0 24px' }}>
+        <div ref={hRef} style={{ textAlign: 'center' as const, marginBottom: 56, opacity: hIn ? 1 : 0, transform: hIn ? 'translateY(0)' : 'translateY(24px)', transition: 'all 0.7s cubic-bezier(0.16,1,0.3,1)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, border: `1px solid ${bd}`, background: cb, marginBottom: 24, fontSize: 12, fontWeight: 600, color: ts }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 8px rgba(99,102,241,0.4)` }} />What we do
           </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {secondaryServices.map((service, index) => (
-              <div 
-                key={index} 
-                className={`group p-6 rounded-xl transition-all duration-300 ${
-                  isDarkMode
-                    ? 'bg-slate-800 border border-slate-700 hover:border-slate-600 hover:shadow-md hover:shadow-slate-900/50'
-                    : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md'
-                }`}
-              >
-                <div className={`w-12 h-12 ${getColorClass(service.color, isDarkMode).bg} rounded-lg flex items-center justify-center mb-4 transition-colors duration-300`}>
-                  <service.icon className={`w-6 h-6 ${getColorClass(service.color, isDarkMode).text}`} />
-                </div>
-                <h4 className={`text-lg font-semibold mb-2 transition-colors duration-300 ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {service.title}
-                </h4>
-                <p className={`transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-400' : 'text-gray-600'
-                }`}>
-                  {service.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          <h2 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 800, color: tp, lineHeight: 1.05, margin: '0 0 14px', letterSpacing: '-0.04em' }}>Services</h2>
+          <p style={{ fontSize: 17, color: ts, maxWidth: 460, margin: '0 auto', lineHeight: 1.6 }}>Professional software solutions tailored to your business.</p>
         </div>
 
-        {/* Bottom Statement */}
-        <div className="text-center">
-          <div className={`inline-flex items-center gap-3 px-6 py-4 rounded-xl transition-colors duration-300 ${
-            isDarkMode
-              ? 'bg-slate-800 border border-slate-700'
-              : 'bg-white border border-gray-200'
-          }`}>
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
-              isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
-            }`}>
-              <Zap className={`w-6 h-6 transition-colors duration-300 ${
-                isDarkMode ? 'text-blue-400' : 'text-blue-600'
-              }`} />
-            </div>
-            <p className={`text-lg transition-colors duration-300 ${
-              isDarkMode ? 'text-slate-300' : 'text-gray-700'
-            }`}>
-              <strong className="font-semibold">We don't just write code</strong> — we solve business problems with software.
-            </p>
+        {/* Primary */}
+        <div ref={pRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, marginBottom: 48 }}>
+          {primary.map((s, i) => <ServiceCard key={s.id} s={s} i={i} anim={pIn} isDark={isDark} />)}
+        </div>
+
+        {/* Divider */}
+        <div ref={sRef} style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24, opacity: sIn ? 1 : 0, transition: 'opacity 0.5s ease 200ms' }}>
+          <div style={{ height: 1, flex: 1, background: bd }} />
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, color: tt, fontFamily: "'JetBrains Mono', monospace" }}>ALSO AVAILABLE</span>
+          <div style={{ height: 1, flex: 1, background: bd }} />
+        </div>
+
+        {/* Secondary */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 48 }}>
+          {secondary.map((s, i) => {
+            const [h, setH] = useState(false)
+            return (
+              <div key={s.id} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+                style={{
+                  padding: '24px 22px', borderRadius: 14,
+                  border: `1px solid ${isDark ? h ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)' : h ? 'rgba(99,102,241,0.15)' : 'rgba(0,0,0,0.06)'}`,
+                  background: isDark ? h ? 'rgba(255,255,255,0.035)' : 'rgba(255,255,255,0.015)' : h ? 'rgba(0,0,0,0.02)' : 'rgba(0,0,0,0.01)',
+                  transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                  transform: sIn ? h ? 'translateY(-3px)' : 'translateY(0)' : 'translateY(20px)',
+                  opacity: sIn ? 1 : 0, transitionDelay: `${i * 80 + 200}ms`,
+                  boxShadow: h && isDark ? `0 0 24px rgba(99,102,241,0.06)` : 'none',
+                }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: isDark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.06)', border: `1px solid ${isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, transition: 'transform 0.2s', transform: h ? 'rotate(-45deg)' : 'rotate(0)' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                </div>
+                <h4 style={{ fontSize: 16, fontWeight: 700, color: tp, marginBottom: 4, fontFamily: "'Syne', sans-serif" }}>{s.title}</h4>
+                <p style={{ fontSize: 13, color: ts, lineHeight: 1.5, margin: 0 }}>{s.desc}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Bottom */}
+        <div style={{ display: 'flex', justifyContent: 'center', opacity: sIn ? 1 : 0, transition: 'opacity 0.5s ease 400ms' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 999, border: `1px solid ${bd}`, background: cb }}>
+            <span style={{ fontSize: 14, color: ts }}>We don't just write code —</span>
+            <span style={{ fontSize: 14, fontWeight: 700, background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>we solve business problems.</span>
           </div>
         </div>
       </div>
     </section>
   )
-}
-
-// Helper function for color classes with dark mode support
-function getColorClass(color: string, isDarkMode: boolean) {
-  if (isDarkMode) {
-    switch (color) {
-      case 'blue':
-        return { bg: 'bg-blue-900/50', text: 'text-blue-400' }
-      case 'green':
-        return { bg: 'bg-green-900/50', text: 'text-green-400' }
-      case 'purple':
-        return { bg: 'bg-purple-900/50', text: 'text-purple-400' }
-      case 'amber':
-        return { bg: 'bg-amber-900/50', text: 'text-amber-400' }
-      default:
-        return { bg: 'bg-slate-700', text: 'text-slate-300' }
-    }
-  } else {
-    switch (color) {
-      case 'blue':
-        return { bg: 'bg-blue-100', text: 'text-blue-600' }
-      case 'green':
-        return { bg: 'bg-green-100', text: 'text-green-600' }
-      case 'purple':
-        return { bg: 'bg-purple-100', text: 'text-purple-600' }
-      case 'amber':
-        return { bg: 'bg-amber-100', text: 'text-amber-600' }
-      default:
-        return { bg: 'bg-gray-100', text: 'text-gray-600' }
-    }
-  }
 }
