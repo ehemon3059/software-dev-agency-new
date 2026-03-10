@@ -89,6 +89,23 @@ const testimonials: Testimonial[] = [
 // HOOKS
 // ============================================================
 
+function useTheme() {
+  const [d, setD] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+    const c = () => setD(document.documentElement.classList.contains('dark'));
+    c();
+    const o = new MutationObserver(c);
+    o.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => o.disconnect();
+  }, []);
+  
+  if (!mounted) return false;
+  return d;
+}
+
 function useInView(threshold: number = 0.15): [RefObject<HTMLDivElement | null>, boolean] {
   const ref = useRef<HTMLDivElement | null>(null);
   const [inView, setInView] = useState(false);
@@ -103,20 +120,20 @@ function useInView(threshold: number = 0.15): [RefObject<HTMLDivElement | null>,
 }
 
 // ============================================================
-// GRADIENT CONSTANTS (matching header)
+// TIGER GRADIENT CONSTANTS
 // ============================================================
 
-const GRADIENT = "linear-gradient(90deg, #4f6ef7 0%, #c44de8 100%)";
+const TIGER_GRADIENT = "linear-gradient(90deg, #FF8C00 0%, #DC2626 100%)";
 
 // ============================================================
 // SUB-COMPONENTS
 // ============================================================
 
-function StarRating({ count }: { count: number }) {
+function StarRating({ count, isDark }: { count: number; isDark: boolean }) {
   return (
     <div style={{ display: "flex", gap: 2 }}>
       {Array.from({ length: 5 }).map((_, i) => (
-        <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill={i < count ? "#facc15" : "rgba(255,255,255,0.1)"}>
+        <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill={i < count ? "#FBBF24" : isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}>
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>
       ))}
@@ -126,11 +143,11 @@ function StarRating({ count }: { count: number }) {
 
 function AvatarCircle({ initials, index }: { initials: string; index: number }) {
   const gradients = [
-    "linear-gradient(135deg, #4f6ef7, #6366f1)",
-    "linear-gradient(135deg, #c44de8, #a855f7)",
-    "linear-gradient(135deg, #10b981, #06b6d4)",
-    "linear-gradient(135deg, #f59e0b, #ef4444)",
-    "linear-gradient(135deg, #6366f1, #ec4899)",
+    "linear-gradient(135deg, #FF8C00, #DC2626)",
+    "linear-gradient(135deg, #DC2626, #F59E0B)",
+    "linear-gradient(135deg, #F59E0B, #FF8C00)",
+    "linear-gradient(135deg, #FF6B00, #DC2626)",
+    "linear-gradient(135deg, #FBBF24, #F97316)",
   ];
   return (
     <div
@@ -147,7 +164,8 @@ function AvatarCircle({ initials, index }: { initials: string; index: number }) 
         color: "#fff",
         letterSpacing: 1,
         flexShrink: 0,
-        boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+        boxShadow: "0 4px 16px rgba(255, 140, 0, 0.3)",
+        fontFamily: "'Rubik', sans-serif",
       }}
     >
       {initials}
@@ -159,9 +177,10 @@ interface TestimonialCardProps {
   testimonial: Testimonial;
   index: number;
   animate: boolean;
+  isDark: boolean;
 }
 
-function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) {
+function TestimonialCard({ testimonial, index, animate, isDark }: TestimonialCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -169,8 +188,12 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        background: isHovered ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
-        border: `1px solid ${isHovered ? "rgba(79,110,247,0.25)" : "rgba(255,255,255,0.06)"}`,
+        background: isDark 
+          ? (isHovered ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)")
+          : (isHovered ? "rgba(255,140,0,0.03)" : "#ffffff"),
+        border: isDark
+          ? `2px solid ${isHovered ? "rgba(255,140,0,0.4)" : "rgba(255,255,255,0.08)"}`
+          : `2px solid ${isHovered ? "rgba(255,140,0,0.4)" : "rgba(255,140,0,0.15)"}`,
         borderRadius: 20,
         padding: "32px 28px",
         display: "flex",
@@ -185,13 +208,15 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
         opacity: animate ? 1 : 0,
         transitionDelay: `${index * 100}ms`,
         boxShadow: isHovered
-          ? "0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(79,110,247,0.06)"
+          ? isDark
+            ? "0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,140,0,0.1)"
+            : "0 20px 60px rgba(255,140,0,0.15), 0 10px 40px rgba(0,0,0,0.08)"
           : "none",
         position: "relative" as const,
         overflow: "hidden",
       }}
     >
-      {/* Subtle top gradient accent */}
+      {/* Tiger gradient top accent */}
       <div
         style={{
           position: "absolute" as const,
@@ -199,8 +224,8 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
           left: 0,
           right: 0,
           height: 3,
-          background: GRADIENT,
-          opacity: isHovered ? 1 : 0,
+          background: TIGER_GRADIENT,
+          opacity: isHovered ? 1 : 0.3,
           transition: "opacity 0.3s",
         }}
       />
@@ -213,16 +238,16 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
             borderRadius: 999,
             fontSize: 11,
             fontWeight: 700,
-            color: "#818cf8",
-            background: "rgba(79,110,247,0.1)",
-            border: "1px solid rgba(79,110,247,0.15)",
+            color: isDark ? "#FB923C" : "#DC2626",
+            background: isDark ? "rgba(255,140,0,0.15)" : "rgba(255,140,0,0.1)",
+            border: isDark ? "1px solid rgba(255,140,0,0.25)" : "1px solid rgba(255,140,0,0.2)",
             letterSpacing: 0.5,
-            fontFamily: "'Space Mono', monospace",
+            fontFamily: "'Rubik', sans-serif",
           }}
         >
           {testimonial.projectType}
         </span>
-        <StarRating count={testimonial.rating} />
+        <StarRating count={testimonial.rating} isDark={isDark} />
       </div>
 
       {/* Quote */}
@@ -232,7 +257,7 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
             fontSize: 36,
             lineHeight: 1,
             marginBottom: 4,
-            background: GRADIENT,
+            background: TIGER_GRADIENT,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -244,9 +269,10 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
         <p
           style={{
             fontSize: 15,
-            color: "#cbd5e1",
+            color: isDark ? "#d1d5db" : "#374151",
             lineHeight: 1.75,
             margin: 0,
+            fontFamily: "'Quicksand', sans-serif",
           }}
         >
           {testimonial.quote}
@@ -260,13 +286,20 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
           alignItems: "center",
           gap: 14,
           paddingTop: 16,
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)",
         }}
       >
         <AvatarCircle initials={testimonial.avatar} index={index} />
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>{testimonial.author}</span>
+            <span style={{ 
+              fontSize: 15, 
+              fontWeight: 700, 
+              color: isDark ? "#f1f5f9" : "#111827",
+              fontFamily: "'Rubik', sans-serif"
+            }}>
+              {testimonial.author}
+            </span>
             {testimonial.linkedIn && (
               <a
                 href={testimonial.linkedIn}
@@ -276,7 +309,7 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
                   width: 18,
                   height: 18,
                   borderRadius: 4,
-                  background: "rgba(79,110,247,0.15)",
+                  background: isDark ? "rgba(255,140,0,0.2)" : "rgba(255,140,0,0.15)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -284,13 +317,18 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
                 }}
                 aria-label={`${testimonial.author}'s LinkedIn`}
               >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="#818cf8">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill={isDark ? "#FB923C" : "#DC2626"}>
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                 </svg>
               </a>
             )}
           </div>
-          <div style={{ fontSize: 13, color: "#64748b", marginTop: 2 }}>
+          <div style={{ 
+            fontSize: 13, 
+            color: isDark ? "#64748b" : "#6b7280", 
+            marginTop: 2,
+            fontFamily: "'Quicksand', sans-serif"
+          }}>
             {testimonial.role} · {testimonial.company}
           </div>
         </div>
@@ -304,13 +342,14 @@ function TestimonialCard({ testimonial, index, animate }: TestimonialCardProps) 
 // ============================================================
 
 export default function Testimonials(): JSX.Element {
+  const isDark = useTheme();
   const [sectionRef, sectionInView] = useInView(0.05);
   const [cardsRef, cardsInView] = useInView(0.05);
 
   useEffect(() => {
     const link = document.createElement("link");
     link.href =
-      "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700;800;900&display=swap";
+      "https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
     return () => {
@@ -323,13 +362,15 @@ export default function Testimonials(): JSX.Element {
       id="Testimonials"
       style={{
         padding: "100px 0",
-        background: "#0a0e1a",
-        fontFamily: "'DM Sans', -apple-system, sans-serif",
+        background: isDark 
+          ? "linear-gradient(to bottom, #0a0a0a 0%, #1a0f0a 50%, #0a0a0a 100%)"
+          : "linear-gradient(to bottom, #fafafa 0%, #fff5f0 50%, #fafafa 100%)",
+        fontFamily: "'Quicksand', -apple-system, sans-serif",
         position: "relative" as const,
         overflow: "hidden",
       }}
     >
-      {/* Ambient blobs */}
+      {/* Ambient tiger-colored blobs */}
       <div style={{ position: "absolute" as const, inset: 0, pointerEvents: "none" as const }}>
         <div
           style={{
@@ -339,7 +380,9 @@ export default function Testimonials(): JSX.Element {
             width: 500,
             height: 500,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(196,77,232,0.06), transparent 70%)",
+            background: isDark
+              ? "radial-gradient(circle, rgba(220,38,38,0.08), transparent 70%)"
+              : "radial-gradient(circle, rgba(255,140,0,0.06), transparent 70%)",
           }}
         />
         <div
@@ -350,7 +393,9 @@ export default function Testimonials(): JSX.Element {
             width: 600,
             height: 600,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(79,110,247,0.05), transparent 70%)",
+            background: isDark
+              ? "radial-gradient(circle, rgba(255,140,0,0.06), transparent 70%)"
+              : "radial-gradient(circle, rgba(245,158,11,0.05), transparent 70%)",
           }}
         />
       </div>
@@ -373,29 +418,37 @@ export default function Testimonials(): JSX.Element {
               fontWeight: 700,
               letterSpacing: 3,
               marginBottom: 16,
-              fontFamily: "'Space Mono', monospace",
-              background: GRADIENT,
+              fontFamily: "'Rubik', sans-serif",
+              background: TIGER_GRADIENT,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}
           >
-            WHAT OUR CLIENTS SAY
+            WHAT OUR CLIENTS SAY 🐯
           </div>
           <h2
             style={{
               fontSize: "clamp(32px, 5vw, 48px)",
               fontWeight: 900,
-              color: "#f1f5f9",
+              color: isDark ? "#f1f5f9" : "#111827",
               lineHeight: 1.1,
               margin: "0 0 16px",
               letterSpacing: -1.5,
+              fontFamily: "'Rubik', sans-serif",
             }}
           >
             Real Feedback from Real Partners
           </h2>
-          <p style={{ fontSize: 18, color: "#94a3b8", maxWidth: 600, margin: "0 auto", lineHeight: 1.6 }}>
-            Don't take our word for it. Here's what our clients say about working with us.
+          <p style={{ 
+            fontSize: 18, 
+            color: isDark ? "#94a3b8" : "#6b7280", 
+            maxWidth: 600, 
+            margin: "0 auto", 
+            lineHeight: 1.6,
+            fontFamily: "'Quicksand', sans-serif"
+          }}>
+            Don't take our word for it. Here's what our clients say about working with us. 🔥
           </p>
 
           {/* Summary stats */}
@@ -404,31 +457,32 @@ export default function Testimonials(): JSX.Element {
               display: "inline-flex",
               gap: 1,
               marginTop: 36,
-              background: "rgba(255,255,255,0.03)",
+              background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
               borderRadius: 14,
               overflow: "hidden",
-              border: "1px solid rgba(255,255,255,0.06)",
+              border: isDark ? "2px solid rgba(255,255,255,0.08)" : "2px solid rgba(255,140,0,0.15)",
             }}
           >
             {([
-              { value: "5/5", label: "Avg. Rating" },
-              { value: "100%", label: "Satisfaction" },
-              { value: "95%", label: "On-Time" },
-              { value: "24h", label: "Response" },
+              { value: "5/5", label: "Avg. Rating", emoji: "⭐" },
+              { value: "100%", label: "Satisfaction", emoji: "💪" },
+              { value: "95%", label: "On-Time", emoji: "⚡" },
+              { value: "24h", label: "Response", emoji: "🚀" },
             ] as const).map((s, i) => (
               <div
                 key={i}
                 style={{
                   padding: "18px 28px",
-                  borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                  borderRight: i < 3 ? (isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.08)") : "none",
                 }}
               >
+                <div style={{ fontSize: 18, marginBottom: 4 }}>{s.emoji}</div>
                 <div
                   style={{
                     fontSize: 22,
                     fontWeight: 800,
-                    fontFamily: "'Space Mono', monospace",
-                    background: GRADIENT,
+                    fontFamily: "'Rubik', sans-serif",
+                    background: TIGER_GRADIENT,
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
@@ -436,7 +490,16 @@ export default function Testimonials(): JSX.Element {
                 >
                   {s.value}
                 </div>
-                <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, marginTop: 4, letterSpacing: 0.5 }}>{s.label}</div>
+                <div style={{ 
+                  fontSize: 11, 
+                  color: isDark ? "#64748b" : "#6b7280", 
+                  fontWeight: 600, 
+                  marginTop: 4, 
+                  letterSpacing: 0.5,
+                  fontFamily: "'Rubik', sans-serif"
+                }}>
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
@@ -452,7 +515,7 @@ export default function Testimonials(): JSX.Element {
           }}
         >
           {testimonials.map((t, i) => (
-            <TestimonialCard key={t.id} testimonial={t} index={i} animate={cardsInView} />
+            <TestimonialCard key={t.id} testimonial={t} index={i} animate={cardsInView} isDark={isDark} />
           ))}
         </div>
       </div>

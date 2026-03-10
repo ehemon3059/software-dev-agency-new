@@ -38,6 +38,17 @@ export default function WhyChooseUs() {
     return () => themeObserver.disconnect()
   }, [])
 
+  // Load fonts
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.href = 'https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap'
+    link.rel = 'stylesheet'
+    document.head.appendChild(link)
+    return () => {
+      document.head.removeChild(link)
+    }
+  }, [])
+
   const differentiators = [
     {
       icon: Target,
@@ -49,7 +60,7 @@ export default function WhyChooseUs() {
         "Business goal alignment",
         "Competitive analysis"
       ],
-      color: "brand",
+      color: "orange",
       metric: "100%",
       metricLabel: "Business Focus"
     },
@@ -63,7 +74,7 @@ export default function WhyChooseUs() {
         "Deployment guides",
         "Codebase walkthroughs"
       ],
-      color: "blue",
+      color: "red",
       metric: "✓",
       metricLabel: "Full Transparency"
     },
@@ -91,7 +102,7 @@ export default function WhyChooseUs() {
         "Regular check-ins",
         "Emergency response"
       ],
-      color: "purple",
+      color: "amber",
       metric: "24/7",
       metricLabel: "Support"
     },
@@ -105,7 +116,7 @@ export default function WhyChooseUs() {
         "Clear milestone delivery",
         "No hidden fees"
       ],
-      color: "amber",
+      color: "orange",
       metric: "$0",
       metricLabel: "Hidden Costs"
     },
@@ -128,21 +139,23 @@ export default function WhyChooseUs() {
   return (
     <section className={`py-20 transition-colors duration-300 ${
       isDarkMode 
-        ? 'bg-gradient-to-b from-slate-900 to-slate-800' 
-        : 'bg-gradient-to-b from-slate-50 to-white'
-    }`}>
+        ? 'bg-gradient-to-b from-gray-950 via-orange-950/10 to-gray-950' 
+        : 'bg-gradient-to-b from-gray-50 via-white to-gray-50'
+    }`}
+    style={{ fontFamily: "'Quicksand', sans-serif" }}
+    >
       <div className="container mx-auto px-4 md:px-6">
         {/* Section Title */}
         <div className="text-center mb-16">
-          <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
-            isDarkMode ? 'text-white' : 'text-slate-900'
-          }`}>
-            What Makes Us Different
+          <h2 className={`text-3xl md:text-4xl font-black mb-4 transition-colors duration-300 ${
+            isDarkMode ? 'text-gray-50' : 'text-gray-900'
+          }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+            What Makes Us Different 🐯
           </h2>
           <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
-            isDarkMode ? 'text-slate-400' : 'text-slate-600'
+            isDarkMode ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            Beyond just development - a partnership approach that delivers real results
+            Beyond just development - a partnership approach that delivers real results 🔥
           </p>
         </div>
 
@@ -151,10 +164,10 @@ export default function WhyChooseUs() {
           {differentiators.map((item, index) => (
             <div 
               key={index}
-              className={`group border rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
+              className={`group border-2 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
                 isDarkMode
-                  ? 'bg-slate-800 border-slate-700 hover:border-slate-600 hover:shadow-slate-900/50'
-                  : 'bg-white border-slate-200 hover:border-slate-300'
+                  ? 'bg-gray-900/50 border-orange-500/20 hover:border-orange-500/60 hover:shadow-orange-500/10'
+                  : 'bg-white border-orange-200 hover:border-orange-400 hover:shadow-orange-500/10'
               }`}
             >
               {/* Icon and Metric */}
@@ -163,42 +176,43 @@ export default function WhyChooseUs() {
                   <item.icon className={`w-6 h-6 ${getColorClass(item.color, isDarkMode).text}`} />
                 </div>
                 <div className="text-right">
-                  <div className={`text-2xl font-bold transition-colors duration-300 ${
-                    isDarkMode ? 'text-white' : 'text-slate-900'
-                  }`}>
+                  <div className={`text-2xl font-black transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-50' : 'text-gray-900'
+                  }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
                     {item.metric}
                   </div>
-                  <div className={`text-xs font-medium transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
-                  }`}>
+                  <div className={`text-xs font-bold transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
                     {item.metricLabel}
                   </div>
                 </div>
               </div>
 
               {/* Title and Description */}
-              <h3 className={`text-xl font-bold mb-3 transition-colors duration-300 ${
-                isDarkMode ? 'text-white' : 'text-slate-900'
-              }`}>
+              <h3 className={`text-xl font-black mb-3 transition-colors duration-300 ${
+                isDarkMode ? 'text-gray-50' : 'text-gray-900'
+              }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
                 {item.title}
               </h3>
               <p className={`mb-5 transition-colors duration-300 ${
-                isDarkMode ? 'text-slate-300' : 'text-slate-700'
+                isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 {item.description}
               </p>
 
               {/* Details */}
-              <div className={`pt-4 border-t transition-colors duration-300 ${
-                isDarkMode ? 'border-slate-700' : 'border-slate-200'
+              <div className={`pt-4 border-t-2 transition-colors duration-300 ${
+                isDarkMode ? 'border-gray-800' : 'border-gray-200'
               }`}>
                 <div className="flex flex-wrap gap-2">
                   {item.details.map((detail, idx) => (
                     <span
                       key={idx}
-                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-colors duration-300 ${
                         getColorClass(item.color, isDarkMode).bg
                       } ${getColorClass(item.color, isDarkMode).text}`}
+                      style={{ fontFamily: "'Rubik', sans-serif" }}
                     >
                       {detail}
                     </span>
@@ -212,25 +226,25 @@ export default function WhyChooseUs() {
         {/* Comparison Section */}
         <div className="grid lg:grid-cols-2 gap-8 mb-16">
           {/* What You Get With Us */}
-          <div className={`border rounded-2xl p-8 transition-colors duration-300 ${
+          <div className={`border-2 rounded-2xl p-8 transition-colors duration-300 ${
             isDarkMode
-              ? 'bg-gradient-to-br from-brand/20 to-brand/10 border-brand/30'
-              : 'bg-gradient-to-br from-brand/5 to-brand/10 border-brand/20'
+              ? 'bg-gradient-to-br from-orange-900/30 to-orange-900/10 border-orange-500/30'
+              : 'bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200'
           }`}>
             <div className="flex items-center gap-4 mb-6">
               <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-                isDarkMode ? 'bg-brand/20' : 'bg-brand/10'
+                isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
               }`}>
-                <CheckCircle className={`w-7 h-7 ${isDarkMode ? 'text-brand/90' : 'text-brand'}`} />
+                <CheckCircle className={`w-7 h-7 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
               </div>
               <div>
-                <h3 className={`text-2xl font-bold transition-colors duration-300 ${
-                  isDarkMode ? 'text-white' : 'text-slate-900'
-                }`}>
-                  With Us
+                <h3 className={`text-2xl font-black transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-50' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  With Us 🐯
                 </h3>
                 <p className={`transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>The partnership experience</p>
               </div>
             </div>
@@ -248,36 +262,36 @@ export default function WhyChooseUs() {
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
                     isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'
                   }`}>
-                    <span className={`font-bold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>✓</span>
+                    <span className={`font-black ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>✓</span>
                   </div>
-                  <span className={`font-medium transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-300' : 'text-slate-700'
-                  }`}>{benefit}</span>
+                  <span className={`font-bold transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`} style={{ fontFamily: "'Rubik', sans-serif" }}>{benefit}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Typical Agency Experience */}
-          <div className={`border rounded-2xl p-8 transition-colors duration-300 ${
+          <div className={`border-2 rounded-2xl p-8 transition-colors duration-300 ${
             isDarkMode
-              ? 'bg-gradient-to-br from-slate-800 to-slate-700 border-slate-700'
-              : 'bg-gradient-to-br from-slate-100 to-white border-slate-300'
+              ? 'bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700'
+              : 'bg-gradient-to-br from-gray-100 to-white border-gray-300'
           }`}>
             <div className="flex items-center gap-4 mb-6">
               <div className={`w-14 h-14 rounded-xl flex items-center justify-center transition-colors duration-300 ${
-                isDarkMode ? 'bg-slate-700' : 'bg-slate-200'
+                isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
               }`}>
-                <X className={`w-7 h-7 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`} />
+                <X className={`w-7 h-7 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
               </div>
               <div>
-                <h3 className={`text-2xl font-bold transition-colors duration-300 ${
-                  isDarkMode ? 'text-white' : 'text-slate-900'
-                }`}>
-                  Typical Agency
+                <h3 className={`text-2xl font-black transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-50' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  Typical Agency 😴
                 </h3>
                 <p className={`transition-colors duration-300 ${
-                  isDarkMode ? 'text-slate-400' : 'text-slate-600'
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>The transactional approach</p>
               </div>
             </div>
@@ -295,143 +309,41 @@ export default function WhyChooseUs() {
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
                     isDarkMode ? 'bg-rose-900/50' : 'bg-rose-100'
                   }`}>
-                    <span className={`font-bold ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`}>✗</span>
+                    <span className={`font-black ${isDarkMode ? 'text-rose-400' : 'text-rose-600'}`}>✗</span>
                   </div>
-                  <span className={`font-medium transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-300' : 'text-slate-700'
-                  }`}>{issue}</span>
+                  <span className={`font-bold transition-colors duration-300 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`} style={{ fontFamily: "'Rubik', sans-serif" }}>{issue}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Testimonial & Trust */}
-        <div className={`border rounded-2xl p-8 mb-16 transition-colors duration-300 ${
-          isDarkMode
-            ? 'bg-slate-800 border-slate-700'
-            : 'bg-white border-slate-200'
-        }`}>
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Testimonial */}
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ${
-                  isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
-                }`}>
-                  <Users className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                </div>
-                <h3 className={`text-2xl font-bold transition-colors duration-300 ${
-                  isDarkMode ? 'text-white' : 'text-slate-900'
-                }`}>
-                  Client Results
-                </h3>
-              </div>
-            
-              <div className="space-y-6">
-                <div className="relative">
-                  <div className={`text-4xl mb-4 transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-600' : 'text-slate-300'
-                  }`}>"</div>
-                  <p className={`text-lg italic mb-6 transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-300' : 'text-slate-700'
-                  }`}>
-                    Other developers built what we asked for. This team helped us understand what we 
-                    actually needed. The documentation alone saved us countless hours down the road.
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">JD</span>
-                    </div>
-                    <div>
-                      <div className={`font-bold transition-colors duration-300 ${
-                        isDarkMode ? 'text-white' : 'text-slate-900'
-                      }`}>Jane Doe</div>
-                      <div className={`text-sm transition-colors duration-300 ${
-                        isDarkMode ? 'text-slate-400' : 'text-slate-600'
-                      }`}>CTO at TechScale Inc.</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Trust Signals */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ${
-                  isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'
-                }`}>
-                  <Shield className={`w-6 h-6 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                </div>
-                <div>
-                  <div className={`text-2xl font-bold transition-colors duration-300 ${
-                    isDarkMode ? 'text-white' : 'text-slate-900'
-                  }`}>100%</div>
-                  <div className={`text-sm transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
-                  }`}>Project Success Rate</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ${
-                  isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'
-                }`}>
-                  <Zap className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                </div>
-                <div>
-                  <div className={`text-2xl font-bold transition-colors duration-300 ${
-                    isDarkMode ? 'text-white' : 'text-slate-900'
-                  }`}>24-48h</div>
-                  <div className={`text-sm transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
-                  }`}>Average Response Time</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ${
-                  isDarkMode ? 'bg-amber-900/50' : 'bg-amber-100'
-                }`}>
-                  <Clock className={`w-6 h-6 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-                </div>
-                <div>
-                  <div className={`text-2xl font-bold transition-colors duration-300 ${
-                    isDarkMode ? 'text-white' : 'text-slate-900'
-                  }`}>95%</div>
-                  <div className={`text-sm transition-colors duration-300 ${
-                    isDarkMode ? 'text-slate-400' : 'text-slate-600'
-                  }`}>On-Time Delivery</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* CTA */}
         <div className="text-center">
-          <div className={`inline-block border rounded-2xl p-8 transition-colors duration-300 ${
+          <div className={`inline-block border-2 rounded-2xl p-8 transition-colors duration-300 ${
             isDarkMode
-              ? 'bg-gradient-to-r from-blue-900/30 to-blue-800/30 border-blue-800'
-              : 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200'
+              ? 'bg-gradient-to-r from-orange-900/30 to-red-900/30 border-orange-500/30'
+              : 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-200'
           }`}>
-            <h3 className={`text-2xl font-bold mb-4 transition-colors duration-300 ${
-              isDarkMode ? 'text-white' : 'text-slate-900'
-            }`}>
-              Ready for a Different Kind of Development Experience?
+            <h3 className={`text-2xl font-black mb-4 transition-colors duration-300 ${
+              isDarkMode ? 'text-gray-50' : 'text-gray-900'
+            }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+              Ready for a Different Kind of Development Experience? 🚀
             </h3>
             <p className={`mb-6 max-w-2xl mx-auto transition-colors duration-300 ${
-              isDarkMode ? 'text-slate-300' : 'text-slate-700'
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
               Stop worrying about your tech and start focusing on your business. 
-              Let's build something that lasts.
+              Let's build something that lasts. 🔥
             </p>
             <button 
               onClick={() => setIsContactModalOpen(true)} 
-              className="group inline-flex items-center gap-3 px-8 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all duration-300 hover:shadow-xl"
+              className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 text-white font-black rounded-xl hover:shadow-xl hover:shadow-orange-500/25 transition-all duration-300"
+              style={{ fontFamily: "'Rubik', sans-serif" }}
             >
-              <span>Start Your Project</span>
+              <span>Start Your Project 🐯</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
@@ -452,37 +364,29 @@ export default function WhyChooseUs() {
 function getColorClass(color: string, isDarkMode: boolean) {
   if (isDarkMode) {
     switch (color) {
-      case 'brand':
-        return { bg: 'bg-brand/20', text: 'text-brand/90' }
-      case 'blue':
-        return { bg: 'bg-blue-900/50', text: 'text-blue-400' }
+      case 'orange':
+        return { bg: 'bg-orange-500/20', text: 'text-orange-400' }
+      case 'red':
+        return { bg: 'bg-red-500/20', text: 'text-red-400' }
       case 'emerald':
         return { bg: 'bg-emerald-900/50', text: 'text-emerald-400' }
-      case 'purple':
-        return { bg: 'bg-purple-900/50', text: 'text-purple-400' }
       case 'amber':
         return { bg: 'bg-amber-900/50', text: 'text-amber-400' }
-      case 'red':
-        return { bg: 'bg-red-900/50', text: 'text-red-400' }
       default:
-        return { bg: 'bg-slate-700', text: 'text-slate-300' }
+        return { bg: 'bg-gray-700', text: 'text-gray-300' }
     }
   } else {
     switch (color) {
-      case 'brand':
-        return { bg: 'bg-brand/10', text: 'text-brand' }
-      case 'blue':
-        return { bg: 'bg-blue-100', text: 'text-blue-600' }
-      case 'emerald':
-        return { bg: 'bg-emerald-100', text: 'text-emerald-600' }
-      case 'purple':
-        return { bg: 'bg-purple-100', text: 'text-purple-600' }
-      case 'amber':
-        return { bg: 'bg-amber-100', text: 'text-amber-600' }
+      case 'orange':
+        return { bg: 'bg-orange-100', text: 'text-orange-600' }
       case 'red':
         return { bg: 'bg-red-100', text: 'text-red-600' }
+      case 'emerald':
+        return { bg: 'bg-emerald-100', text: 'text-emerald-600' }
+      case 'amber':
+        return { bg: 'bg-amber-100', text: 'text-amber-600' }
       default:
-        return { bg: 'bg-slate-100', text: 'text-slate-600' }
+        return { bg: 'bg-gray-100', text: 'text-gray-600' }
     }
   }
 }

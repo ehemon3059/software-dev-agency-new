@@ -1,8 +1,8 @@
 'use client'
 
-import BlogSection from '@/components/BlogSection'
+// import BlogSection from '@/components/BlogSection'
 import CaseStudies from '@/components/CaseStudies'
-import ClientLogos from '@/components/ClientLogos'
+
 import FAQSection from '@/components/FAQSection'
 import FinalCTA from '@/components/FinalCTA'
 import Footer from '@/components/Footer'
@@ -13,11 +13,11 @@ import Pricing from '@/components/Pricing'
 import ProblemSolution from '@/components/ProblemSolution'
 import ProcessSection from '@/components/ProcessSection'
 import ProjectEstimator from '@/components/ProjectEstimator'
-import ServicesSection from '@/components/ServicesSection'
+// import ServicesSection from '@/components/ServicesSection'
 import SocialProof from '@/components/SocialProof'
 import TechStack from '@/components/TechStack'
 import Testimonials from '@/components/Testimonials'
-import TrustBar from '@/components/TrustBar'
+
 import WhyChooseUs from '@/components/WhyChooseUs'
 
 
@@ -44,20 +44,21 @@ export default function Home() {
 
       <ProblemSolution />
 
-      <ServicesSection/>
+    
 
       <CaseStudies />
 
     <ProcessSection />
       
     <TechStack />
+
       <Testimonials /> 
 
       <FoundersSection />
 
     <Pricing />
 
-      <BlogSection />
+      {/* <BlogSection /> */}
 
       <ProjectEstimator />
 

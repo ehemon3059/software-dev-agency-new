@@ -5,8 +5,7 @@ import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'fram
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
-import { ArrowRight, Link, Zap } from 'lucide-react'
-import ContactModal from './ContactModal'
+import { ArrowRight, Zap } from 'lucide-react'
 
 // Theme hook
 function useTheme() {
@@ -217,10 +216,6 @@ function TigerStripes({ isDark }: { isDark: boolean }) {
 }
 
 export default function Hero() {
-
-
-    const [isContactModalOpen, setIsContactModalOpen] = useState(false)
-
   const isDark = useTheme()
   const [mounted, setMounted] = useState(false)
   const [tigerRoar, setTigerRoar] = useState(false)
@@ -404,10 +399,7 @@ export default function Hero() {
               className="flex flex-wrap items-center gap-4"
             >
               {/* Primary CTA - Pulsating tiger button */}
-
-  
               <motion.button
-               onClick={() => setIsContactModalOpen(true)} 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 animate={{
@@ -422,7 +414,6 @@ export default function Hero() {
                 }}
                 className="group relative px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 text-white font-bold text-lg overflow-hidden shadow-2xl font-['Rubik']"
               >
-              
                 <motion.div 
                   className="absolute inset-0 bg-gradient-to-r from-orange-500 via-red-500 to-orange-500"
                   animate={{ 
@@ -449,15 +440,8 @@ export default function Hero() {
                 </span>
               </motion.button>
 
-             
-
               {/* Secondary CTA */}
               <motion.button
-
-                onClick={() => {
-                    document.getElementById('CaseStudies')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-
                 whileHover={{ 
                   scale: 1.05,
                   borderColor: "#FF8C00",
@@ -519,23 +503,35 @@ export default function Hero() {
             />
             
             {/* 3D Canvas */}
-            
-
-            <motion.div
-  whileHover={{ scale: 1.02 }}
-  className="relative h-full rounded-3xl overflow-hidden border-4 border-orange-300 dark:border-orange-700 shadow-2xl cursor-pointer"
->
-  <video
-    src="/herovideo/tiger.webm"   // 👈 put your video path here
-    autoPlay
-    loop
-    muted
-    playsInline
-    className="w-full h-full object-cover"
-  />
-</motion.div>
-
-
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="relative h-full rounded-3xl overflow-hidden border-4 border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-100 via-yellow-100 to-amber-100 dark:from-gray-900 dark:via-orange-950/30 dark:to-gray-950 shadow-2xl cursor-pointer"
+            >
+              <Suspense fallback={
+                <div className="flex items-center justify-center h-full">
+                  <motion.div 
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="text-8xl"
+                  >
+                    🐯
+                  </motion.div>
+                </div>
+              }>
+                <Canvas camera={{ position: [0, 0, 6], fov: 50 }}>
+                  <ambientLight intensity={0.8} />
+                  <directionalLight position={[10, 10, 5]} intensity={1.5} />
+                  <pointLight position={[-10, -10, -5]} intensity={1} color="#FF8C00" />
+                  <pointLight position={[10, -10, 5]} intensity={0.8} color="#FFD700" />
+                  <TigerEmoji />
+                  <OrbitControls
+                    enableZoom={false}
+                    enablePan={false}
+                    autoRotate={false}
+                  />
+                </Canvas>
+              </Suspense>
+            </motion.div>
 
             {/* Floating tiger emojis - only render after mount to avoid hydration mismatch */}
             {mounted && [...Array(5)].map((_, i) => {
@@ -605,15 +601,6 @@ export default function Hero() {
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&family=Caveat:wght@700&display=swap');
       `}</style>
-
-
-      <ContactModal 
-        isOpen={isContactModalOpen}
-        onClose={() => setIsContactModalOpen(false)}
-      
-      />
     </section>
-
-    
   )
 }

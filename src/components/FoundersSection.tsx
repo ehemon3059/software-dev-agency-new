@@ -54,7 +54,7 @@ const founders: FounderData[] = [
     label: "FOUNDER 01 · TECH",
     owns: "Product, Tech, Vision",
     worksFrom: "Remote / Office",
-    color: "#4f6ef7",
+    color: "#FF8C00", // Tiger orange
     photoUrl: "/founders/emon.jpg",
     videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
     videoTitle: "Building a SaaS Dashboard — Live Coding Session",
@@ -88,7 +88,7 @@ const founders: FounderData[] = [
     label: "FOUNDER 02 · OPS",
     owns: "Operations, Sales, Turkey",
     worksFrom: "Bursa, Turkey",
-    color: "#c44de8",
+    color: "#DC2626", // Tiger red
     photoUrl: "/founders/evan.jpg",
     videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
     videoTitle: "Client Demo — ClinicFlow TR Platform Walkthrough",
@@ -121,14 +121,31 @@ const sharedResponsibilities: SharedItem[] = [
 ];
 
 // ============================================================
-// CONSTANTS
+// TIGER GRADIENT
 // ============================================================
 
-const GRADIENT = "linear-gradient(90deg, #4f6ef7 0%, #c44de8 100%)";
+const TIGER_GRADIENT = "linear-gradient(90deg, #FF8C00 0%, #DC2626 100%)";
 
 // ============================================================
 // HOOKS
 // ============================================================
+
+function useTheme() {
+  const [d, setD] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+    const c = () => setD(document.documentElement.classList.contains('dark'));
+    c();
+    const o = new MutationObserver(c);
+    o.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => o.disconnect();
+  }, []);
+  
+  if (!mounted) return false;
+  return d;
+}
 
 function useInView(threshold: number = 0.08): [RefObject<HTMLDivElement | null>, boolean] {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -162,29 +179,28 @@ function SocialIcon({ platform, color }: { platform: string; color: string }) {
 }
 
 // ============================================================
-// PHOTO COMPONENT (500x797 aspect ratio)
+// PHOTO COMPONENT
 // ============================================================
 
-function FounderPhoto({ founder, size = "large" }: { founder: FounderData; size?: "large" | "thumb" }) {
+function FounderPhoto({ founder, size = "large", isDark }: { founder: FounderData; size?: "large" | "thumb"; isDark: boolean }) {
   const width = size === "large" ? 320 : 100;
 
   return (
     <div
       style={{
         width,
-        aspectRatio: "500 / 797", // Matches your actual image proportions
+        aspectRatio: "500 / 797",
         borderRadius: size === "large" ? 20 : 14,
         overflow: "hidden",
-        border: `2px solid ${founder.color}25`,
+        border: isDark ? `2px solid ${founder.color}35` : `2px solid ${founder.color}40`,
         position: "relative",
-        background: "#0f172a", // Dark fallback background
+        background: isDark ? "#0f172a" : "#f8fafc",
         flexShrink: 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      {/* 1. THE ACTUAL PHOTO */}
       <img 
         src={founder.photoUrl} 
         alt={founder.fullName}
@@ -198,16 +214,12 @@ function FounderPhoto({ founder, size = "large" }: { founder: FounderData; size?
           zIndex: 0 
         }} 
       />
-
-      {/* 2. OVERLAY GRADIENT (To make text readable) */}
       <div style={{ 
         position: "absolute", 
         inset: 0, 
         background: "linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8))",
         zIndex: 1 
       }} />
-
-      {/* 3. CONTENT (Letter and Name) */}
       <div style={{ 
         position: "relative", 
         zIndex: 2, 
@@ -229,6 +241,7 @@ function FounderPhoto({ founder, size = "large" }: { founder: FounderData; size?
             fontWeight: 900,
             color: "#fff",
             boxShadow: `0 8px 32px rgba(0,0,0,0.3)`,
+            fontFamily: "'Rubik', sans-serif",
           }}
         >
           {founder.name[0]}
@@ -236,7 +249,7 @@ function FounderPhoto({ founder, size = "large" }: { founder: FounderData; size?
         
         {size === "large" && (
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", textShadow: "0 2px 4px rgba(0,0,0,0.5)", fontFamily: "'Rubik', sans-serif" }}>
               {founder.fullName}
             </div>
           </div>
@@ -250,7 +263,7 @@ function FounderPhoto({ founder, size = "large" }: { founder: FounderData; size?
 // VIDEO EMBED COMPONENT
 // ============================================================
 
-function VideoEmbed({ founder, animate }: { founder: FounderData; animate: boolean }) {
+function VideoEmbed({ founder, animate, isDark }: { founder: FounderData; animate: boolean; isDark: boolean }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
@@ -260,8 +273,8 @@ function VideoEmbed({ founder, animate }: { founder: FounderData; animate: boole
         aspectRatio: "16 / 9",
         borderRadius: 18,
         overflow: "hidden",
-        border: `2px solid ${founder.color}20`,
-        background: `${founder.color}06`,
+        border: isDark ? `2px solid ${founder.color}25` : `2px solid ${founder.color}30`,
+        background: isDark ? `${founder.color}08` : `${founder.color}06`,
         position: "relative" as const,
         opacity: animate ? 1 : 0,
         transform: animate ? "translateY(0)" : "translateY(20px)",
@@ -300,7 +313,7 @@ function VideoEmbed({ founder, animate }: { founder: FounderData; animate: boole
               width: 72,
               height: 72,
               borderRadius: "50%",
-              background: `${founder.color}20`,
+              background: isDark ? `${founder.color}25` : `${founder.color}20`,
               border: `2px solid ${founder.color}40`,
               display: "flex",
               alignItems: "center",
@@ -313,8 +326,8 @@ function VideoEmbed({ founder, animate }: { founder: FounderData; animate: boole
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
           </div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: "#e2e8f0" }}>{founder.videoTitle}</div>
-          <div style={{ fontSize: 12, color: "#64748b" }}>Click to play</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: isDark ? "#e2e8f0" : "#1f2937", fontFamily: "'Rubik', sans-serif" }}>{founder.videoTitle}</div>
+          <div style={{ fontSize: 12, color: isDark ? "#64748b" : "#6b7280", fontFamily: "'Quicksand', sans-serif" }}>Click to play</div>
         </button>
       )}
     </div>
@@ -325,7 +338,7 @@ function VideoEmbed({ founder, animate }: { founder: FounderData; animate: boole
 // DETAIL PAGE
 // ============================================================
 
-function FounderDetailPage({ founder, onBack }: { founder: FounderData; onBack: () => void }) {
+function FounderDetailPage({ founder, onBack, isDark }: { founder: FounderData; onBack: () => void; isDark: boolean }) {
   const [heroRef, heroInView] = useInView(0.05);
   const [photoRef, photoInView] = useInView(0.1);
   const [rolesRef, rolesInView] = useInView(0.05);
@@ -336,9 +349,9 @@ function FounderDetailPage({ founder, onBack }: { founder: FounderData; onBack: 
     <div style={{ maxWidth: 960, margin: "0 auto" }}>
       {/* Back */}
       <div style={{ padding: "24px 0" }}>
-        <button onClick={onBack} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "10px 20px", color: "#94a3b8", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, transition: "all 0.2s", fontFamily: "inherit" }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#e2e8f0"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#94a3b8"; }}>
+        <button onClick={onBack} className={`px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-all font-['Rubik'] ${
+          isDark ? 'bg-gray-900/50 border-2 border-orange-500/20 text-gray-400 hover:border-orange-500/40 hover:text-gray-200' : 'bg-white border-2 border-orange-200 text-gray-600 hover:border-orange-400 hover:text-gray-900'
+        }`}>
           ← Back to Founders
         </button>
       </div>
@@ -346,58 +359,88 @@ function FounderDetailPage({ founder, onBack }: { founder: FounderData; onBack: 
       {/* Hero */}
       <div ref={heroRef} style={{ opacity: heroInView ? 1 : 0, transform: heroInView ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s cubic-bezier(.22,1,.36,1)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" as const }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, color: founder.color, fontFamily: "'Space Mono', monospace" }}>{founder.label}</span>
-          <span style={{ padding: "4px 14px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: "#10b981", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>Active Co-Founder</span>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, color: founder.color, fontFamily: "'Rubik', sans-serif" }}>{founder.label}</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+            isDark ? 'bg-green-500/15 text-green-400 border border-green-500/25' : 'bg-green-100 text-green-700 border border-green-300'
+          }`}>Active Co-Founder</span>
         </div>
-        <h2 style={{ fontSize: "clamp(36px, 5vw, 56px)", fontWeight: 900, color: "#f1f5f9", lineHeight: 1.05, margin: "0 0 8px", letterSpacing: -1.5 }}>{founder.fullName}</h2>
-        <div style={{ fontSize: 17, fontWeight: 700, color: founder.color, marginBottom: 8, fontFamily: "'Space Mono', monospace" }}>{founder.title}</div>
+        <h2 className={`text-5xl lg:text-6xl font-black mb-2 font-['Rubik'] tracking-tighter ${
+          isDark ? 'text-gray-50' : 'text-gray-900'
+        }`}>{founder.fullName}</h2>
+        <div style={{ fontSize: 17, fontWeight: 700, color: founder.color, marginBottom: 8, fontFamily: "'Rubik', sans-serif" }}>{founder.title}</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, marginBottom: 32 }}>
-          <span style={{ padding: "5px 14px", borderRadius: 999, fontSize: 12, fontWeight: 600, color: founder.color, background: `${founder.color}12`, border: `1px solid ${founder.color}22` }}>Owns: {founder.owns}</span>
-          <span style={{ padding: "5px 14px", borderRadius: 999, fontSize: 12, fontWeight: 600, color: "#94a3b8", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>{founder.worksFrom}</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+            isDark ? `text-[${founder.color}] bg-[${founder.color}]/15 border border-[${founder.color}]/25` : `text-[${founder.color}] bg-[${founder.color}]/10 border border-[${founder.color}]/25`
+          }`} style={{color: founder.color, background: `${founder.color}20`, borderColor: `${founder.color}35`}}>Owns: {founder.owns}</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold font-['Rubik'] ${
+            isDark ? 'bg-gray-900/50 border border-orange-500/20 text-gray-400' : 'bg-gray-100 border border-gray-300 text-gray-700'
+          }`}>{founder.worksFrom}</span>
           {founder.socials.map((s) => (
-            <a key={s.platform} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.platform} style={{ width: 32, height: 32, borderRadius: 10, background: `${founder.color}12`, border: `1px solid ${founder.color}22`, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
+            <a key={s.platform} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.platform} className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              isDark ? 'bg-gray-900/50 border border-orange-500/20 hover:border-orange-500/40' : 'bg-orange-50 border border-orange-200 hover:border-orange-400'
+            }`}>
               <SocialIcon platform={s.platform} color={founder.color} />
             </a>
           ))}
         </div>
       </div>
 
-      <div style={{ height: 1, background: `linear-gradient(90deg, transparent, ${founder.color}40, transparent)`, margin: "0 0 48px" }} />
+      <div style={{ height: 1, background: isDark ? `linear-gradient(90deg, transparent, ${founder.color}40, transparent)` : `linear-gradient(90deg, transparent, ${founder.color}30, transparent)`, margin: "0 0 48px" }} />
 
       {/* Photo + Bio */}
       <div ref={photoRef} style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 40, marginBottom: 56, opacity: photoInView ? 1 : 0, transform: photoInView ? "translateY(0)" : "translateY(24px)", transition: "all 0.7s cubic-bezier(.22,1,.36,1)" }}>
-        <FounderPhoto founder={founder} size="large" />
+        <FounderPhoto founder={founder} size="large" isDark={isDark} />
         <div>
           <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
             {founder.highlights.map((h, i) => (
-              <div key={i} style={{ flex: 1, padding: "18px 16px", background: `${founder.color}08`, border: `1px solid ${founder.color}18`, borderRadius: 14, textAlign: "center" as const }}>
-                <div style={{ fontSize: 24, fontWeight: 800, color: founder.color, fontFamily: "'Space Mono', monospace" }}>{h.value}</div>
-                <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, marginTop: 4 }}>{h.label}</div>
+              <div key={i} className={`flex-1 p-4 rounded-xl text-center ${
+                isDark ? 'bg-gray-900/50 border border-orange-500/20' : 'bg-orange-50 border border-orange-200'
+              }`}>
+                <div className="text-2xl font-black font-['Rubik'] tabular-nums" style={{color: founder.color}}>{h.value}</div>
+                <div className={`text-xs font-semibold mt-1 font-['Quicksand'] ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>{h.label}</div>
               </div>
             ))}
           </div>
-          <div style={{ padding: "20px 24px", background: `${founder.color}08`, borderLeft: `4px solid ${founder.color}`, borderRadius: "0 14px 14px 0", marginBottom: 24 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase" as const, color: founder.color, marginBottom: 6, fontFamily: "'Space Mono', monospace" }}>CORE MISSION</div>
-            <div style={{ fontSize: 15, color: "#e2e8f0", fontWeight: 600, lineHeight: 1.5 }}>{founder.coreResponsibility}</div>
+          <div className={`p-5 rounded-xl mb-6 border-l-4 ${
+            isDark ? 'bg-gray-900/50' : 'bg-orange-50'
+          }`} style={{borderLeftColor: founder.color}}>
+            <div className="text-xs font-black tracking-wider uppercase mb-2 font-['Rubik']" style={{color: founder.color}}>CORE MISSION</div>
+            <div className={`text-base font-semibold leading-relaxed font-['Quicksand'] ${
+              isDark ? 'text-gray-200' : 'text-gray-800'
+            }`}>{founder.coreResponsibility}</div>
           </div>
-          <p style={{ fontSize: 15, color: "#cbd5e1", lineHeight: 1.8, margin: 0 }}>{founder.bio}</p>
+          <p className={`text-base leading-relaxed font-['Quicksand'] ${
+            isDark ? 'text-gray-300' : 'text-gray-700'
+          }`}>{founder.bio}</p>
         </div>
       </div>
 
       {/* Roles */}
       <div ref={rolesRef} style={{ marginBottom: 56 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase" as const, color: founder.color, marginBottom: 8, fontFamily: "'Space Mono', monospace" }}>ROLES & RESPONSIBILITIES</div>
-        <h3 style={{ fontSize: 24, fontWeight: 800, color: "#f1f5f9", margin: "0 0 24px" }}>What {founder.name} Owns</h3>
+        <div className="text-xs font-black tracking-wider uppercase mb-2 font-['Rubik']" style={{color: founder.color}}>ROLES & RESPONSIBILITIES</div>
+        <h3 className={`text-3xl font-black mb-6 font-['Rubik'] ${
+          isDark ? 'text-gray-50' : 'text-gray-900'
+        }`}>What {founder.name} Owns</h3>
         <div style={{ display: "flex", flexDirection: "column" as const, gap: 8 }}>
           {founder.roles.map((role, i) => (
             <div key={i} style={{ opacity: rolesInView ? 1 : 0, transform: rolesInView ? "translateX(0)" : "translateX(-16px)", transition: `all 0.5s cubic-bezier(.22,1,.36,1) ${i * 80 + 150}ms` }}>
-              <button onClick={() => setExpandedRole(expandedRole === i ? null : i)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", background: expandedRole === i ? `${founder.color}0A` : "rgba(255,255,255,0.02)", border: `1px solid ${expandedRole === i ? `${founder.color}25` : "rgba(255,255,255,0.06)"}`, borderRadius: expandedRole === i ? "14px 14px 0 0" : 14, cursor: "pointer", transition: "all 0.25s", textAlign: "left" as const, fontFamily: "inherit", color: "inherit" }}>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: `${founder.color}15`, border: `1px solid ${founder.color}25`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: founder.color, fontFamily: "'Space Mono', monospace", flexShrink: 0 }}>{i + 1}</div>
-                <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: "#e2e8f0" }}>{role.title}</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "transform 0.25s", transform: expandedRole === i ? "rotate(180deg)" : "rotate(0)" }}><polyline points="6 9 12 15 18 9" /></svg>
+              <button onClick={() => setExpandedRole(expandedRole === i ? null : i)} className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all cursor-pointer font-['Rubik'] ${
+                expandedRole === i 
+                  ? isDark ? 'bg-gray-900/70 border-2' : 'bg-orange-50 border-2'
+                  : isDark ? 'bg-gray-900/50 border-2 border-orange-500/20 hover:border-orange-500/30' : 'bg-white border-2 border-orange-200 hover:border-orange-300'
+              }`} style={{borderColor: expandedRole === i ? founder.color : undefined}}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0 font-['Rubik']" style={{background: `${founder.color}25`, borderColor: `${founder.color}35`, color: founder.color}}>{i + 1}</div>
+                <span className={`flex-1 text-base font-bold text-left ${
+                  isDark ? 'text-gray-100' : 'text-gray-900'
+                }`}>{role.title}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isDark ? "#64748b" : "#6b7280"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "transform 0.25s", transform: expandedRole === i ? "rotate(180deg)" : "rotate(0)" }}><polyline points="6 9 12 15 18 9" /></svg>
               </button>
               {expandedRole === i && (
-                <div style={{ padding: "16px 20px 16px 68px", background: `${founder.color}06`, border: `1px solid ${founder.color}15`, borderTop: "none", borderRadius: "0 0 14px 14px", fontSize: 14, color: "#94a3b8", lineHeight: 1.7, animation: "founderFadeDown 0.25s ease" }}>{role.desc}</div>
+                <div className={`p-4 pl-12 mt-1 rounded-xl text-sm leading-relaxed font-['Quicksand'] ${
+                  isDark ? 'bg-gray-900/50 text-gray-300' : 'bg-orange-50/50 text-gray-700'
+                }`}>{role.desc}</div>
               )}
             </div>
           ))}
@@ -406,26 +449,38 @@ function FounderDetailPage({ founder, onBack }: { founder: FounderData; onBack: 
 
       {/* Skills */}
       <div style={{ marginBottom: 56 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase" as const, color: "#64748b", marginBottom: 14, fontFamily: "'Space Mono', monospace" }}>KEY SKILLS & EXPERTISE</div>
+        <div className={`text-xs font-black tracking-wider uppercase mb-3 font-['Rubik'] ${
+          isDark ? 'text-gray-500' : 'text-gray-600'
+        }`}>KEY SKILLS & EXPERTISE</div>
         <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8 }}>
           {founder.skills.map((skill) => (
-            <span key={skill} style={{ padding: "7px 16px", borderRadius: 999, fontSize: 13, fontWeight: 600, color: founder.color, background: `${founder.color}0A`, border: `1px solid ${founder.color}18`, fontFamily: "'Space Mono', monospace" }}>{skill}</span>
+            <span key={skill} className={`px-4 py-2 rounded-full text-sm font-bold font-['Rubik'] ${
+              isDark ? 'bg-gray-900/50 border border-orange-500/20 text-orange-300' : 'bg-orange-50 border border-orange-200 text-orange-700'
+            }`}>{skill}</span>
           ))}
         </div>
       </div>
 
       {/* Video */}
       <div ref={videoRef} style={{ marginBottom: 72 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase" as const, color: founder.color, marginBottom: 8, fontFamily: "'Space Mono', monospace" }}>WATCH {founder.name.toUpperCase()} IN ACTION</div>
-        <h3 style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9", margin: "0 0 20px" }}>{founder.videoTitle}</h3>
-        <VideoEmbed founder={founder} animate={videoInView} />
+        <div className="text-xs font-black tracking-wider uppercase mb-2 font-['Rubik']" style={{color: founder.color}}>WATCH {founder.name.toUpperCase()} IN ACTION</div>
+        <h3 className={`text-2xl font-black mb-5 font-['Rubik'] ${
+          isDark ? 'text-gray-50' : 'text-gray-900'
+        }`}>{founder.videoTitle}</h3>
+        <VideoEmbed founder={founder} animate={videoInView} isDark={isDark} />
       </div>
 
       {/* CTA */}
-      <div style={{ textAlign: "center" as const, padding: "48px 32px", background: `linear-gradient(135deg, ${founder.color}08, ${founder.color}04)`, borderRadius: 20, border: `1px solid ${founder.color}15`, marginBottom: 80 }}>
-        <h3 style={{ fontSize: 24, fontWeight: 800, color: "#f1f5f9", margin: "0 0 10px" }}>Want to work with {founder.name}?</h3>
-        <p style={{ fontSize: 15, color: "#94a3b8", margin: "0 0 28px" }}>Book a free consultation and let's discuss your project</p>
-        <a href="mailto:hello@papatiger.tech" style={{ display: "inline-block", padding: "14px 36px", background: GRADIENT, color: "#fff", fontSize: 15, fontWeight: 700, borderRadius: 12, textDecoration: "none", boxShadow: `0 4px 24px ${founder.color}35` }}>Get Free Consultation →</a>
+      <div className={`text-center p-12 rounded-2xl border-2 mb-20 ${
+        isDark ? 'bg-gray-900/50 border-orange-500/20' : 'bg-gradient-to-br from-orange-50 to-red-50 border-orange-200'
+      }`}>
+        <h3 className={`text-3xl font-black mb-3 font-['Rubik'] ${
+          isDark ? 'text-gray-50' : 'text-gray-900'
+        }`}>Want to work with {founder.name}?</h3>
+        <p className={`text-base mb-7 font-['Quicksand'] ${
+          isDark ? 'text-gray-400' : 'text-gray-700'
+        }`}>Book a free consultation and let's discuss your project 🐯</p>
+        <a href="mailto:hello@papatiger.tech" className="inline-block px-9 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white text-base font-bold rounded-xl no-underline shadow-lg hover:shadow-xl transition-all font-['Rubik']">Get Free Consultation →</a>
       </div>
     </div>
   );
@@ -436,6 +491,7 @@ function FounderDetailPage({ founder, onBack }: { founder: FounderData; onBack: 
 // ============================================================
 
 export default function FoundersSection(): JSX.Element {
+  const isDark = useTheme();
   const [activeFounder, setActiveFounder] = useState<number | null>(null);
   const [heroRef, heroInView] = useInView(0.05);
   const [gridRef, gridInView] = useInView(0.05);
@@ -443,33 +499,43 @@ export default function FoundersSection(): JSX.Element {
 
   useEffect(() => {
     const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700;800;900&display=swap";
+    link.href = "https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
     return () => { document.head.removeChild(link); };
   }, []);
 
   useEffect(() => {
-    const section = document.getElementById("Founders");
-    if (section) {
-      const top = section.getBoundingClientRect().top + window.pageYOffset - 80;
-      window.scrollTo({ top, behavior: "smooth" });
+    // Only scroll to section when activeFounder changes from user click, not on initial mount
+    if (activeFounder !== null) {
+      const section = document.getElementById("Founders");
+      if (section) {
+        const top = section.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
     }
   }, [activeFounder]);
 
-  const bgStyle = { minHeight: "100vh" as const, background: "#0a0e1a", fontFamily: "'DM Sans', -apple-system, sans-serif", color: "#e2e8f0", overflowX: "hidden" as const };
+  const bgStyle = { 
+    minHeight: "100vh" as const, 
+    background: isDark 
+      ? "linear-gradient(to bottom, #0a0a0a 0%, #1a0f0a 50%, #0a0a0a 100%)" 
+      : "linear-gradient(to bottom, #fafafa 0%, #fff5f0 50%, #fafafa 100%)",
+    fontFamily: "'Quicksand', -apple-system, sans-serif",
+    color: isDark ? "#e2e8f0" : "#1f2937",
+    overflowX: "hidden" as const 
+  };
 
   // ---- DETAIL VIEW ----
   if (activeFounder !== null) {
     const founder = founders[activeFounder];
     return (
       <section id="Founders" style={{ ...bgStyle, padding: "0 0 40px", position: "relative" as const, overflow: "hidden" }}>
-        <style>{`@keyframes founderFadeDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         <div style={{ position: "absolute" as const, inset: 0, pointerEvents: "none" as const }}>
-          <div style={{ position: "absolute" as const, top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: `radial-gradient(circle, ${founder.color}08, transparent 70%)` }} />
+          <div style={{ position: "absolute" as const, top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: isDark ? `radial-gradient(circle, ${founder.color}08, transparent 70%)` : `radial-gradient(circle, ${founder.color}06, transparent 70%)` }} />
         </div>
         <div style={{ position: "relative" as const, zIndex: 1, maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <FounderDetailPage founder={founder} onBack={() => setActiveFounder(null)} />
+          <FounderDetailPage founder={founder} onBack={() => setActiveFounder(null)} isDark={isDark} />
         </div>
       </section>
     );
@@ -478,57 +544,128 @@ export default function FoundersSection(): JSX.Element {
   // ---- LISTING VIEW ----
   return (
     <section id="Founders" style={{ ...bgStyle, padding: "100px 0", position: "relative" as const, overflow: "hidden" }}>
-      <style>{`@keyframes founderFadeDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-
       <div style={{ position: "absolute" as const, inset: 0, pointerEvents: "none" as const }}>
-        <div style={{ position: "absolute" as const, top: -300, left: "50%", transform: "translateX(-50%)", width: 800, height: 800, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,110,247,0.06), transparent 70%)" }} />
-        <div style={{ position: "absolute" as const, bottom: -200, right: -100, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,77,232,0.05), transparent 70%)" }} />
+        <div style={{ position: "absolute" as const, top: -300, left: "50%", transform: "translateX(-50%)", width: 800, height: 800, borderRadius: "50%", background: isDark ? "radial-gradient(circle, rgba(255,140,0,0.08), transparent 70%)" : "radial-gradient(circle, rgba(255,140,0,0.06), transparent 70%)" }} />
+        <div style={{ position: "absolute" as const, bottom: -200, right: -100, width: 500, height: 500, borderRadius: "50%", background: isDark ? "radial-gradient(circle, rgba(220,38,38,0.06), transparent 70%)" : "radial-gradient(circle, rgba(245,158,11,0.05), transparent 70%)" }} />
       </div>
 
       <div style={{ position: "relative" as const, zIndex: 1, maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
         {/* Hero */}
-        <div ref={heroRef} style={{ textAlign: "center" as const, marginBottom: 64, opacity: heroInView ? 1 : 0, transform: heroInView ? "translateY(0)" : "translateY(40px)", transition: "all 1s cubic-bezier(.22,1,.36,1)" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 3, marginBottom: 20, fontFamily: "'Space Mono', monospace", background: GRADIENT, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>THE PEOPLE BEHIND THE CODE</div>
-          <h1 style={{ fontSize: "clamp(36px, 6vw, 64px)", fontWeight: 900, color: "#f1f5f9", lineHeight: 1.05, margin: "0 0 24px", letterSpacing: -2 }}>Meet the Founders</h1>
-          <p style={{ fontSize: 19, color: "#94a3b8", maxWidth: 620, margin: "0 auto 40px", lineHeight: 1.6 }}>Two founders, complementary strengths. One builds the product. The other builds the market. Together, we turn great software into thriving businesses.</p>
+        <div 
+          ref={heroRef} 
+          className="text-center mb-16 px-4 transition-all duration-1000 ease-[cubic-bezier(.22,1,.36,1)]"
+          style={{ 
+            opacity: heroInView ? 1 : 0, 
+            transform: heroInView ? "translateY(0)" : "translateY(40px)" 
+          }}
+        >
+          {/* Subtitle */}
+          <div className="text-[10px] sm:text-xs font-bold tracking-[0.2em] mb-4 font-['Rubik'] uppercase"
+              style={{ background: TIGER_GRADIENT, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            THE PEOPLE BEHIND THE CODE 🐯
+          </div>
 
-          <div style={{ display: "inline-flex", gap: 1, background: "rgba(255,255,255,0.04)", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
-            {([{ value: "2", label: "Co-Founders" }, { value: "Tech + Ops", label: "Coverage" }, { value: "3+", label: "Years Together" }, { value: "100%", label: "Commitment" }] as const).map((s, i) => (
-              <div key={i} style={{ padding: "20px 32px", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9", fontFamily: "'Space Mono', monospace" }}>{s.value}</div>
-                <div style={{ fontSize: 12, color: "#64748b", fontWeight: 600, marginTop: 4, letterSpacing: 0.5 }}>{s.label}</div>
+          {/* Heading: text-4xl for mobile, text-6xl for desktop */}
+          <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-black mb-6 font-['Rubik'] tracking-tighter ${
+            isDark ? 'text-gray-50' : 'text-gray-900'
+          }`}>
+            Meet the Founders
+          </h1>
+
+          {/* Paragraph: adjusted max-width and font size for mobile */}
+          <p className={`text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-['Quicksand'] ${
+            isDark ? 'text-gray-300' : 'text-gray-700'
+          }`}>
+            Two founders, complementary strengths. One builds the product. The other builds the market. Together, we turn great software into thriving businesses. 🔥
+          </p>
+
+          {/* Stats Container: Grid layout (2x2 on mobile, 4x1 on md+) */}
+          <div className={`inline-grid grid-cols-2 md:grid-flow-col rounded-2xl overflow-hidden border-2 ${
+            isDark ? 'bg-gray-900/50 border-orange-500/20' : 'bg-white border-orange-200'
+          }`}>
+            {([
+              { value: "2", label: "Co-Founders" }, 
+              { value: "Tech + Ops", label: "Coverage" }, 
+              { value: "3+", label: "Years Together" }, 
+              { value: "100%", label: "Commitment" }
+            ] as const).map((s, i) => (
+              <div 
+                key={i} 
+                className={`px-4 py-4 sm:px-8 sm:py-5 flex flex-col items-center justify-center ${
+                  // Border logic: bottom border for top row on mobile, right border for desktop
+                  isDark ? 'border-orange-500/10' : 'border-orange-100'
+                } ${i % 2 === 0 ? 'border-r' : ''} ${i < 2 ? 'border-b md:border-b-0' : ''} md:border-b-0 ${i === 2 ? 'md:border-r' : ''}`}
+              >
+                <div className={`text-xl sm:text-2xl font-black font-['Rubik'] ${
+                  isDark ? 'text-orange-300' : 'text-orange-600'
+                }`}>
+                  {s.value}
+                </div>
+                <div className={`text-[10px] sm:text-xs font-semibold mt-1 tracking-wide font-['Rubik'] ${
+                  isDark ? 'text-gray-500' : 'text-gray-600'
+                }`}>
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Two Cards */}
-        <div ref={gridRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(480px, 1fr))", gap: 24, marginBottom: 72 }}>
+        <div 
+          ref={gridRef} 
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 px-4"
+        >
           {founders.map((founder, index) => (
             <div
               key={founder.id}
               onClick={() => setActiveFounder(index)}
-              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 20, overflow: "hidden", cursor: "pointer", transition: "all 0.4s cubic-bezier(.22,1,.36,1)", opacity: gridInView ? 1 : 0, transform: gridInView ? "translateY(0)" : "translateY(30px)", transitionDelay: `${index * 150}ms`, position: "relative" as const }}
-              onMouseEnter={(e) => { const t = e.currentTarget; t.style.background = "rgba(255,255,255,0.04)"; t.style.borderColor = `${founder.color}35`; t.style.transform = "translateY(-4px)"; t.style.boxShadow = `0 20px 60px rgba(0,0,0,0.3), 0 0 40px ${founder.color}0A`; }}
-              onMouseLeave={(e) => { const t = e.currentTarget; t.style.background = "rgba(255,255,255,0.02)"; t.style.borderColor = "rgba(255,255,255,0.06)"; t.style.transform = "translateY(0)"; t.style.boxShadow = "none"; }}
+              className={`rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 border-2 group ${
+                isDark 
+                  ? 'bg-gray-900/50 border-orange-500/20 hover:border-orange-500/60 hover:shadow-2xl' 
+                  : 'bg-white border-orange-200 hover:border-orange-400 hover:shadow-2xl'
+              }`}
+              style={{ 
+                opacity: gridInView ? 1 : 0, 
+                transform: gridInView ? "translateY(0)" : "translateY(30px)", 
+                transitionDelay: `${index * 150}ms`,
+                boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.08)'
+              }}
             >
-              <div style={{ height: 4, background: founder.color }} />
-              <div style={{ padding: "32px 28px" }}>
-                {/* Top bar */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, color: "#64748b", fontFamily: "'Space Mono', monospace" }}>{founder.label}</span>
-                  <span style={{ padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "#10b981", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>Active</span>
+              {/* Top Accent Line */}
+              <div className="h-1 w-full" style={{ background: founder.color }} />
+              
+              {/* Card Content */}
+              <div className="p-6 sm:p-8">
+                {/* Card Header */}
+                <div className="flex justify-between items-center mb-5">
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider font-['Rubik']" style={{color: isDark ? "#64748b" : "#6b7280"}}>
+                    {founder.label}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold ${
+                    isDark ? 'bg-green-500/15 text-green-400 border border-green-500/25' : 'bg-green-100 text-green-700 border border-green-300'
+                  }`}>
+                    Active
+                  </span>
                 </div>
 
-                {/* Photo + Name */}
-                <div style={{ display: "flex", gap: 20, marginBottom: 20, alignItems: "center" }}>
-                  <FounderPhoto founder={founder} size="thumb" />
+                {/* Profile Section */}
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 mb-5 items-start sm:items-center">
+                  <FounderPhoto founder={founder} size="thumb" isDark={isDark} />
                   <div>
-                    <h3 style={{ fontSize: 24, fontWeight: 800, color: "#f1f5f9", margin: "0 0 6px", lineHeight: 1.2 }}>{founder.fullName}</h3>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: founder.color, fontFamily: "'Space Mono', monospace", marginBottom: 8 }}>{founder.title}</div>
-                    <div style={{ display: "flex", gap: 6 }}>
+                    <h3 className={`text-xl sm:text-2xl font-black mb-1 leading-tight font-['Rubik'] ${
+                      isDark ? 'text-gray-50' : 'text-gray-900'
+                    }`}>
+                      {founder.fullName}
+                    </h3>
+                    <div className="text-sm font-bold mb-2 font-['Rubik']" style={{color: founder.color}}>
+                      {founder.title}
+                    </div>
+                    <div className="flex gap-2">
                       {founder.socials.map((s) => (
-                        <div key={s.platform} style={{ width: 26, height: 26, borderRadius: 7, background: `${founder.color}12`, border: `1px solid ${founder.color}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div key={s.platform} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform hover:scale-110 ${
+                          isDark ? 'bg-gray-800 border border-orange-500/20' : 'bg-orange-50 border border-orange-200'
+                        }`}>
                           <SocialIcon platform={s.platform} color={founder.color} />
                         </div>
                       ))}
@@ -536,52 +673,57 @@ export default function FoundersSection(): JSX.Element {
                   </div>
                 </div>
 
-                {/* Bio excerpt */}
-                <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.65, margin: "0 0 20px" }}>{founder.bio.substring(0, 180)}...</p>
+                {/* Bio */}
+                <p className={`text-sm leading-relaxed mb-6 font-['Quicksand'] line-clamp-3 ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  {founder.bio}
+                </p>
 
-                {/* Stats */}
-                <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+                {/* Highlights Stats */}
+                <div className="flex gap-3 mb-6">
                   {founder.highlights.map((h, i) => (
-                    <div key={i} style={{ flex: 1, padding: "12px 10px", background: `${founder.color}06`, borderRadius: 10, textAlign: "center" as const }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: founder.color, fontFamily: "'Space Mono', monospace" }}>{h.value}</div>
-                      <div style={{ fontSize: 10, color: "#64748b", marginTop: 3, fontWeight: 600 }}>{h.label}</div>
+                    <div key={i} className={`flex-1 p-3 rounded-xl text-center ${
+                      isDark ? 'bg-gray-800/50' : 'bg-orange-50'
+                    }`}>
+                      <div className="text-lg sm:text-xl font-black font-['Rubik']" style={{color: founder.color}}>
+                        {h.value}
+                      </div>
+                      <div className={`text-[10px] font-semibold mt-1 font-['Quicksand'] ${
+                        isDark ? 'text-gray-500' : 'text-gray-600'
+                      }`}>
+                        {h.label}
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Roles preview */}
-                <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" as const, color: "#4b5563", marginBottom: 8, fontFamily: "'Space Mono', monospace" }}>KEY ROLES</div>
-                  <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
-                    {founder.roles.slice(0, 3).map((r, i) => (
-                      <span key={i} style={{ padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 600, color: "#94a3b8", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>{r.title}</span>
-                    ))}
-                    {founder.roles.length > 3 && <span style={{ padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 600, color: founder.color, background: `${founder.color}0A`, border: `1px solid ${founder.color}18` }}>+{founder.roles.length - 3} more</span>}
+                {/* Video Preview Box */}
+                <div className={`flex items-center gap-3 p-4 rounded-xl border mb-6 transition-colors ${
+                  isDark ? 'bg-gray-800/50 border-orange-500/20 group-hover:bg-gray-800' : 'bg-orange-50 border-orange-200 group-hover:bg-orange-100'
+                }`}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{background: `${founder.color}20`}}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill={founder.color}><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                  </div>
+                  <div className="min-w-0">
+                    <div className={`text-sm font-bold font-['Rubik'] truncate ${
+                      isDark ? 'text-gray-200' : 'text-gray-800'
+                    }`}>
+                      {founder.videoTitle}
+                    </div>
+                    <div className={`text-xs mt-1 font-['Quicksand'] ${
+                      isDark ? 'text-gray-500' : 'text-gray-600'
+                    }`}>
+                      Watch demo video
+                    </div>
                   </div>
                 </div>
 
-                {/* Skills */}
-                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: 20 }}>
-                  {founder.skills.slice(0, 5).map((s) => (
-                    <span key={s} style={{ padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 600, color: founder.color, background: `${founder.color}08`, border: `1px solid ${founder.color}15`, fontFamily: "'Space Mono', monospace" }}>{s}</span>
-                  ))}
-                  {founder.skills.length > 5 && <span style={{ padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 600, color: "#64748b", background: "rgba(255,255,255,0.03)" }}>+{founder.skills.length - 5}</span>}
-                </div>
-
-                {/* Video teaser */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: `${founder.color}06`, borderRadius: 12, border: `1px solid ${founder.color}12`, marginBottom: 16 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: `${founder.color}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill={founder.color}><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0" }}>{founder.videoTitle}</div>
-                    <div style={{ fontSize: 10, color: "#64748b", marginTop: 2 }}>Watch demo video inside</div>
-                  </div>
-                </div>
-
-                {/* View arrow */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: founder.color, display: "flex", alignItems: "center", gap: 6 }}>View Full Profile <span style={{ fontSize: 18 }}>→</span></span>
+                {/* Footer Link */}
+                <div className="flex items-center justify-end">
+                  <span className="text-sm font-bold flex items-center gap-2 font-['Rubik'] transition-transform group-hover:translate-x-1" style={{color: founder.color}}>
+                    View Full Profile <span className="text-lg">→</span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -591,25 +733,43 @@ export default function FoundersSection(): JSX.Element {
         {/* Shared */}
         <div ref={sharedRef}>
           <div style={{ textAlign: "center" as const, marginBottom: 32, opacity: sharedInView ? 1 : 0, transform: sharedInView ? "translateY(0)" : "translateY(20px)", transition: "all 0.6s cubic-bezier(.22,1,.36,1)" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase" as const, color: "#64748b", marginBottom: 10, fontFamily: "'Space Mono', monospace" }}>SHARED OWNERSHIP</div>
-            <h3 style={{ fontSize: 26, fontWeight: 800, color: "#f1f5f9", margin: 0 }}>What We Own Together</h3>
+            <div className={`text-xs font-black tracking-wider uppercase mb-2 font-['Rubik'] ${
+              isDark ? 'text-gray-500' : 'text-gray-600'
+            }`}>SHARED OWNERSHIP 🤝</div>
+            <h3 className={`text-3xl font-black font-['Rubik'] ${
+              isDark ? 'text-gray-50' : 'text-gray-900'
+            }`}>What We Own Together</h3>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginBottom: 56 }}>
             {sharedResponsibilities.map((item, i) => (
-              <div key={item.title} style={{ padding: "28px 24px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, opacity: sharedInView ? 1 : 0, transform: sharedInView ? "translateY(0)" : "translateY(20px)", transition: "all 0.5s cubic-bezier(.22,1,.36,1)", transitionDelay: `${i * 120 + 300}ms` }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{item.title}</div>
-                <div style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.65 }}>{item.desc}</div>
+              <div key={item.title} className={`p-7 rounded-2xl border-2 ${
+                isDark ? 'bg-gray-900/50 border-orange-500/20' : 'bg-white border-orange-200'
+              }`} style={{ opacity: sharedInView ? 1 : 0, transform: sharedInView ? "translateY(0)" : "translateY(20px)", transition: "all 0.5s cubic-bezier(.22,1,.36,1)", transitionDelay: `${i * 120 + 300}ms` }}>
+                <div className={`text-lg font-black mb-2 font-['Rubik'] ${
+                  isDark ? 'text-gray-50' : 'text-gray-900'
+                }`}>{item.title}</div>
+                <div className={`text-sm leading-relaxed font-['Quicksand'] ${
+                  isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>{item.desc}</div>
               </div>
             ))}
           </div>
 
-          {/* Connector */}
           <div style={{ display: "flex", justifyContent: "center", opacity: sharedInView ? 1 : 0, transition: "opacity 0.6s ease 700ms" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "18px 32px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #4f6ef7, #4f6ef799)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "'Space Mono', monospace" }}>E</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><div style={{ width: 24, height: 2, background: GRADIENT, borderRadius: 2 }} /><div style={{ fontSize: 16 }}>+</div><div style={{ width: 24, height: 2, background: GRADIENT, borderRadius: 2 }} /></div>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #c44de8, #c44de899)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "'Space Mono', monospace" }}>E</div>
-              <div style={{ marginLeft: 4 }}><div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>Built Together</div><div style={{ fontSize: 12, color: "#64748b" }}>One vision, two strengths</div></div>
+            <div className={`flex items-center gap-4 px-8 py-5 rounded-2xl border-2 ${
+              isDark ? 'bg-gray-900/50 border-orange-500/20' : 'bg-white border-orange-200'
+            }`}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #FF8C00, #FF8C0099)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "'Rubik', sans-serif" }}>E</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><div style={{ width: 24, height: 2, background: TIGER_GRADIENT, borderRadius: 2 }} /><div style={{ fontSize: 16 }}>+</div><div style={{ width: 24, height: 2, background: TIGER_GRADIENT, borderRadius: 2 }} /></div>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #DC2626, #DC262699)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: "'Rubik', sans-serif" }}>E</div>
+              <div style={{ marginLeft: 4 }}>
+                <div className={`text-base font-black font-['Rubik'] ${
+                  isDark ? 'text-gray-100' : 'text-gray-900'
+                }`}>Built Together 🐯</div>
+                <div className={`text-sm font-['Quicksand'] ${
+                  isDark ? 'text-gray-400' : 'text-gray-600'
+                }`}>One vision, two strengths</div>
+              </div>
             </div>
           </div>
         </div>

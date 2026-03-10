@@ -1,111 +1,209 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { Menu, X, ChevronRight, Sun, Moon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Menu, X, ChevronRight, Sun, Moon, Zap } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import ContactModal from './ContactModal'
 
+// const NAV_ITEMS = [
+
+//   { id: 'SocialProof', label: 'Trust', href: '#SocialProof', emoji: '⭐' },
+//   { id: 'ProblemSolution', label: 'Solutions', href: '#ProblemSolution', emoji: '💡' },
+//   { id: 'CaseStudies', label: 'Work', href: '#CaseStudies', emoji: '🎨' },
+//   { id: 'ProcessSection', label: 'Process', href: '#ProcessSection', emoji: '🔧' },
+//   { id: 'TechStack', label: 'Tech', href: '#TechStack', emoji: '⚡' },
+//   { id: 'Testimonials', label: 'Reviews', href: '#Testimonials', emoji: '💬' },
+//   { id: 'Founders', label: 'Team', href: '#Founders', emoji: '👥' },
+//   { id: 'Pricing', label: 'Pricing', href: '#Pricing', emoji: '💰' },
+//   { id: 'FAQ', label: 'FAQ', href: '#FAQ', emoji: '❓' },
+// ]
+
 const NAV_ITEMS = [
-  { id: 'services', label: 'Services', href: '#services' },
-  { id: 'Case_Studies', label: 'Work', href: '#Case_Studies' },
-  { id: 'Process', label: 'Process', href: '#Process' },
-  { id: 'Pricing', label: 'Pricing', href: '#Pricing' },
-  { id: 'Founders', label: 'Team', href: '#Founders' },
-  { id: 'FAQ', label: 'FAQ', href: '#FAQ' },
+  { id: 'CaseStudies', label: 'Work', href: '#CaseStudies', emoji: '🎨' },
+  { id: 'ProblemSolution', label: 'Solutions', href: '#ProblemSolution', emoji: '💡' },
+  { id: 'ProcessSection', label: 'Process', href: '#ProcessSection', emoji: '🔧' },
+  { id: 'Founders', label: 'Team', href: '#Founders', emoji: '👥' },
+  { id: 'Pricing', label: 'Pricing', href: '#Pricing', emoji: '💰' },
 ]
 
-const ACCENT = '#6366f1'
-const ACCENT_GLOW = 'rgba(99,102,241,0.5)'
-const CYAN = '#22d3ee'
-
 function useTheme() {
-  const [isDark, setIsDark] = useState(true)
+  const [isDark, setIsDark] = useState(false) // Start with false to avoid hydration mismatch
+  const [mounted, setMounted] = useState(false)
+  
   useEffect(() => {
+    setMounted(true)
     const check = () => setIsDark(document.documentElement.classList.contains('dark'))
     check()
     const obs = new MutationObserver(check)
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     return () => obs.disconnect()
   }, [])
+  
+  // Return [false, setIsDark] during SSR to avoid mismatch
+  if (!mounted) return [false, setIsDark] as const
   return [isDark, setIsDark] as const
 }
 
-function LogoMark({ isDark }: { isDark: boolean }) {
+// Tiger logo mark with stripes
+function TigerLogo({ isDark }: { isDark: boolean }) {
   return (
-    <div style={{
-      width: 34, height: 34, borderRadius: 10,
-      background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: isDark ? `0 0 20px ${ACCENT_GLOW}, 0 0 60px rgba(34,211,238,0.15)` : `0 2px 12px rgba(99,102,241,0.25)`,
-      position: 'relative' as const,
-      overflow: 'hidden',
-    }}>
-      {/* Shine sweep animation */}
-      <div style={{
-        position: 'absolute' as const, inset: 0,
-        background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%)',
-        animation: 'logoShine 3s ease-in-out infinite',
-      }} />
-      <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', position: 'relative' as const, zIndex: 1, fontFamily: "'Syne', sans-serif" }}>P</span>
-    </div>
+    <motion.div
+      whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
+      transition={{ duration: 0.5 }}
+      className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 via-red-500 to-orange-600 flex items-center justify-center shadow-lg overflow-hidden"
+      style={{
+        boxShadow: isDark
+          ? '0 0 20px rgba(255, 140, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)'
+          : '0 0 15px rgba(255, 140, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      {/* Tiger stripes */}
+      <div className="absolute inset-0 opacity-40">
+        <div className="absolute w-1 h-full bg-black left-2 transform -rotate-12" />
+        <div className="absolute w-1 h-full bg-black right-2 transform rotate-12" />
+      </div>
+      
+      {/* Animated glow pulse */}
+      <motion.div
+        animate={{
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        className="absolute inset-0 bg-gradient-to-tr from-yellow-400/20 to-orange-400/20"
+      />
+      
+      <span className="relative z-10 text-xl font-black text-white font-['Rubik']">🐯</span>
+    </motion.div>
   )
 }
 
+// Mobile menu with tiger theme
 function MobileMenu({ isOpen, onClose, activeSection, onNavClick, onCTAClick, isDark, onThemeToggle }: {
   isOpen: boolean; onClose: () => void; activeSection: string; onNavClick: (h: string) => void
   onCTAClick: () => void; isDark: boolean; onThemeToggle: () => void
 }) {
-  if (!isOpen) return null
   return (
-    <div className="fixed inset-0 z-50 md:hidden">
-      <div style={{ position: 'absolute' as const, inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)' }} onClick={onClose} />
-      <div style={{
-        position: 'absolute' as const, right: 0, top: 0, bottom: 0, width: 280,
-        background: isDark ? 'rgba(10,10,15,0.95)' : 'rgba(255,255,255,0.97)',
-        borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-        backdropFilter: 'blur(20px)', animation: 'slideIn 0.25s cubic-bezier(0.16,1,0.3,1)',
-      }}>
-        <div style={{ display: 'flex', flexDirection: 'column' as const, height: '100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: ACCENT, fontFamily: "'JetBrains Mono', monospace" }}>MENU</span>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button onClick={onThemeToggle} style={{ padding: 8, borderRadius: 8, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', border: 'none', cursor: 'pointer', color: isDark ? '#a1a1aa' : '#71717a' }}>
-                {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-              </button>
-              <button onClick={onClose} style={{ padding: 8, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: isDark ? '#a1a1aa' : '#71717a' }}>
-                <X className="w-4 h-4" />
-              </button>
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md md:hidden"
+            onClick={onClose}
+          />
+          
+          {/* Menu Panel */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed right-0 top-0 bottom-0 w-80 z-50 md:hidden"
+            style={{
+              background: isDark
+                ? 'linear-gradient(to bottom, rgba(20, 20, 25, 0.98), rgba(10, 10, 15, 0.98))'
+                : 'linear-gradient(to bottom, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.98))',
+              backdropFilter: 'blur(20px)',
+              borderLeft: isDark ? '2px solid rgba(255, 140, 0, 0.2)' : '2px solid rgba(255, 140, 0, 0.15)',
+            }}
+          >
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex justify-between items-center p-6 border-b border-orange-500/20">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+                  className="flex items-center gap-2"
+                >
+                  <Zap className="w-5 h-5 text-orange-500 fill-orange-500" />
+                  <span className="text-sm font-bold text-orange-500 font-['Rubik'] uppercase tracking-wider">
+                    Menu
+                  </span>
+                </motion.div>
+                
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 180 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={onThemeToggle}
+                    className="p-2 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 transition-colors"
+                  >
+                    {isDark ? (
+                      <Sun className="w-4 h-4 text-orange-400" />
+                    ) : (
+                      <Moon className="w-4 h-4 text-orange-600" />
+                    )}
+                  </motion.button>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={onClose}
+                    className="p-2 rounded-lg hover:bg-orange-500/10 transition-colors"
+                  >
+                    <X className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+                  </motion.button>
+                </div>
+              </div>
+              
+              {/* Nav Items */}
+              <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                {NAV_ITEMS.map((item, index) => (
+                  <motion.button
+                    key={item.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 + 0.1 }}
+                    whileHover={{ x: 5, scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { onNavClick(item.href); onClose() }}
+                    className={`w-full p-4 rounded-xl text-left font-['Rubik'] font-semibold text-base transition-all ${
+                      activeSection === item.id
+                        ? isDark
+                          ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20 text-orange-300 border-2 border-orange-500/30'
+                          : 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 border-2 border-orange-300'
+                        : isDark
+                        ? 'bg-gray-800/30 text-gray-300 hover:bg-gray-800/50 border-2 border-transparent'
+                        : 'bg-gray-100/50 text-gray-700 hover:bg-gray-200/70 border-2 border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{item.emoji}</span>
+                      {item.label}
+                    </div>
+                  </motion.button>
+                ))}
+              </nav>
+              
+              {/* CTA */}
+              <div className="p-6 border-t border-orange-500/20">
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => { onCTAClick(); onClose() }}
+                  className="w-full p-4 rounded-xl bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 text-white font-bold text-base font-['Rubik'] shadow-lg flex items-center justify-center gap-2"
+                  style={{
+                    boxShadow: '0 4px 20px rgba(255, 140, 0, 0.4)',
+                  }}
+                >
+                  🐯 Get Started
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </div>
             </div>
-          </div>
-          <nav style={{ flex: 1, padding: '12px 12px', display: 'flex', flexDirection: 'column' as const, gap: 2 }}>
-            {NAV_ITEMS.map(item => (
-              <button key={item.id} onClick={() => { onNavClick(item.href); onClose() }}
-                style={{
-                  padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: "'Syne', sans-serif",
-                  fontSize: 14, fontWeight: activeSection === item.id ? 700 : 500, textAlign: 'left' as const,
-                  background: activeSection === item.id ? (isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)') : 'transparent',
-                  color: activeSection === item.id ? (isDark ? '#c7d2fe' : ACCENT) : (isDark ? '#a1a1aa' : '#71717a'),
-                  transition: 'all 0.15s',
-                }}>
-                {item.label}
-              </button>
-            ))}
-          </nav>
-          <div style={{ padding: '16px 16px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
-            <button onClick={() => { onCTAClick(); onClose() }}
-              style={{
-                width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`, color: '#fff',
-                fontSize: 14, fontWeight: 700, fontFamily: "'Syne', sans-serif",
-                boxShadow: `0 4px 24px ${ACCENT_GLOW}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              }}>
-              Get Started <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-      <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
-    </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -136,10 +234,14 @@ export default function Header() {
       const pos = window.scrollY + 100
       for (const { id } of NAV_ITEMS) {
         const el = document.getElementById(id)
-        if (el && pos >= el.offsetTop && pos < el.offsetTop + el.offsetHeight) { setActiveSection(id); break }
+        if (el && pos >= el.offsetTop && pos < el.offsetTop + el.offsetHeight) { 
+          setActiveSection(id)
+          break 
+        }
       }
     }
-    window.addEventListener('scroll', handle); handle()
+    window.addEventListener('scroll', handle)
+    handle()
     return () => window.removeEventListener('scroll', handle)
   }, [])
 
@@ -151,130 +253,200 @@ export default function Header() {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
   const handleNavClick = (href: string) => {
     const el = document.querySelector(href)
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 72, behavior: 'smooth' })
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - 80, behavior: 'smooth' })
   }
 
   const isScrolled = scrollY > 20
-  const headerBg = isDark
-    ? isScrolled ? 'rgba(5,5,10,0.85)' : 'rgba(5,5,10,0.5)'
-    : isScrolled ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.6)'
-  const borderBottom = isScrolled
-    ? isDark ? `1px solid rgba(99,102,241,0.15)` : `1px solid rgba(0,0,0,0.08)`
-    : `1px solid transparent`
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-        @keyframes logoShine { 0%,100% { transform: translateX(-100%); } 50% { transform: translateX(100%); } }
-        @keyframes glowPulse { 0%,100% { box-shadow: 0 0 20px ${ACCENT_GLOW}; } 50% { box-shadow: 0 0 32px ${ACCENT_GLOW}, 0 0 60px rgba(34,211,238,0.12); } }
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap');
       `}</style>
 
-      <header style={{
-        position: 'fixed' as const, top: 0, left: 0, right: 0, zIndex: 40,
-        background: headerBg,
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        borderBottom,
-        boxShadow: isScrolled && isDark ? `0 1px 40px rgba(99,102,241,0.06)` : 'none',
-        transition: 'all 0.4s cubic-bezier(0.16,1,0.3,1)',
-      }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          isScrolled
+            ? isDark
+              ? 'bg-gray-950/90 border-b-2 border-orange-500/30 shadow-lg shadow-orange-500/10'
+              : 'bg-white/90 border-b-2 border-orange-300/50 shadow-lg shadow-orange-500/5'
+            : 'bg-transparent border-b-2 border-transparent'
+        }`}
+        style={{
+          backdropFilter: isScrolled ? 'blur(20px) saturate(180%)' : 'blur(10px)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
+          
+            <motion.button
+              onClick={scrollToTop}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-3 bg-transparent border-none cursor-pointer"
+            >
+              <TigerLogo isDark={isDark} />
+              
+              <div className="flex items-baseline gap-0.5">
+                {/* UPDATE THIS SPAN BELOW */}
+                <span className={`text-xl font-black font-['Rubik'] tracking-tight transition-colors duration-300 ${
+                  isScrolled && !isDark ? 'text-gray-700' : 'text-white'
+                }`}>
+                  papa
+                </span>
+                {/* The rest remains the same */}
+                <span className="text-xl font-black bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent dark:from-orange-400 dark:via-red-400 dark:to-orange-400 font-['Rubik'] tracking-tight">
+                  tiger
+                </span>
+                <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 ml-0.5">
+                  .tech
+                </span>
+              </div>
 
-          {/* Logo */}
-          <button onClick={scrollToTop} aria-label="Home" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <LogoMark isDark={isDark} />
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 0 }}>
-              <span style={{ fontSize: 17, fontWeight: 800, color: isDark ? '#fafafa' : '#09090b', fontFamily: "'Syne', sans-serif", letterSpacing: '-0.03em' }}>papa</span>
-              <span style={{
-                fontSize: 17, fontWeight: 800, fontFamily: "'Syne', sans-serif", letterSpacing: '-0.03em',
-                background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`,
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-              }}>tiger</span>
-              <span style={{ fontSize: 11, fontWeight: 500, color: isDark ? '#52525b' : '#a1a1aa', marginLeft: 2 }}>.tech</span>
+
+            </motion.button>
+
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {NAV_ITEMS.map((item) => {
+                const isActive = activeSection === item.id
+                const isHovered = hoveredNav === item.id
+                
+                return (
+                  <motion.button
+                    key={item.id}
+                    onClick={() => handleNavClick(item.href)}
+                    onMouseEnter={() => setHoveredNav(item.id)}
+                    onMouseLeave={() => setHoveredNav(null)}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`relative px-4 py-2 rounded-lg font-['Rubik'] font-semibold text-sm transition-all ${
+                      isActive
+                        ? isDark
+                          ? 'text-orange-300'
+                          : 'text-orange-600'
+                        : isDark
+                        ? 'text-gray-400 hover:text-gray-200'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      <span className="text-base">{item.emoji}</span>
+                      {item.label}
+                    </span>
+                    
+                    {/* Active/hover background */}
+                    {(isActive || isHovered) && (
+                      <motion.div
+                        layoutId="navPill"
+                        className={`absolute inset-0 rounded-lg ${
+                          isActive
+                            ? isDark
+                              ? 'bg-gradient-to-r from-orange-500/20 to-red-500/20'
+                              : 'bg-gradient-to-r from-orange-100 to-red-100'
+                            : isDark
+                            ? 'bg-gray-800/40'
+                            : 'bg-gray-100/60'
+                        }`}
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    
+                    {/* Active indicator paw */}
+                    {isActive && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -bottom-1 left-1/2 transform -translate-x-1/2"
+                      >
+                        <span className="text-xs">🐾</span>
+                      </motion.div>
+                    )}
+                  </motion.button>
+                )
+              })}
+
+              {/* Divider */}
+              <div className={`w-px h-6 mx-2 ${isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
+              {/* Theme Toggle */}
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 180 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsDark((d) => !d)}
+                className={`p-2.5 rounded-lg transition-colors ${
+                  isDark
+                    ? 'bg-gray-800/60 hover:bg-gray-800 text-orange-400'
+                    : 'bg-gray-100 hover:bg-gray-200 text-orange-600'
+                }`}
+              >
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </motion.button>
+
+              {/* CTA Button */}
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setContactOpen(true)}
+                className="ml-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 text-white font-bold text-sm font-['Rubik'] shadow-lg flex items-center gap-2"
+                style={{
+                  boxShadow: isDark
+                    ? '0 4px 20px rgba(255, 140, 0, 0.4), 0 0 40px rgba(255, 140, 0, 0.1)'
+                    : '0 4px 20px rgba(255, 140, 0, 0.3)',
+                }}
+              >
+                🔥 Get Started
+                <motion.div
+                  animate={{ x: [0, 3, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </motion.div>
+              </motion.button>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="flex lg:hidden items-center gap-2">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsDark((d) => !d)}
+                className={`p-2 rounded-lg ${
+                  isDark ? 'bg-gray-800/60 text-orange-400' : 'bg-gray-100 text-orange-600'
+                }`}
+              >
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setMobileOpen(true)}
+                className={`p-2 rounded-lg ${
+                  isDark ? 'text-gray-400 hover:text-orange-400' : 'text-gray-600 hover:text-orange-600'
+                }`}
+              >
+                <Menu className="w-6 h-6" />
+              </motion.button>
             </div>
-          </button>
-
-          {/* Desktop Nav */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 2 }} className="hidden md:flex">
-            {NAV_ITEMS.map(item => {
-              const isActive = activeSection === item.id
-              const isHovered = hoveredNav === item.id
-              return (
-                <button key={item.id}
-                  onClick={() => handleNavClick(item.href)}
-                  onMouseEnter={() => setHoveredNav(item.id)}
-                  onMouseLeave={() => setHoveredNav(null)}
-                  style={{
-                    position: 'relative' as const,
-                    padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                    fontSize: 13, fontWeight: 600, fontFamily: "'Syne', sans-serif",
-                    background: (isActive || isHovered) ? (isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.06)') : 'transparent',
-                    color: isActive ? (isDark ? '#c7d2fe' : ACCENT) : isHovered ? (isDark ? '#e2e8f0' : '#09090b') : (isDark ? '#71717a' : '#71717a'),
-                    transition: 'all 0.2s cubic-bezier(0.16,1,0.3,1)',
-                    transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
-                  }}>
-                  {item.label}
-                  {/* Glow dot for active */}
-                  {isActive && <span style={{
-                    position: 'absolute' as const, bottom: 2, left: '50%', transform: 'translateX(-50%)',
-                    width: 4, height: 4, borderRadius: '50%', background: ACCENT,
-                    boxShadow: `0 0 8px ${ACCENT_GLOW}`,
-                  }} />}
-                </button>
-              )
-            })}
-
-            <div style={{ width: 1, height: 20, margin: '0 8px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }} />
-
-            {/* Theme toggle */}
-            <button onClick={() => setIsDark(d => !d)} aria-label="Toggle theme"
-              style={{
-                padding: 8, borderRadius: 8, border: 'none', cursor: 'pointer',
-                background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                color: isDark ? '#a1a1aa' : '#71717a',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'rotate(20deg)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'; e.currentTarget.style.transform = 'rotate(0)' }}>
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            {/* CTA */}
-            <button onClick={() => setContactOpen(true)}
-              style={{
-                marginLeft: 8, padding: '9px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                background: `linear-gradient(135deg, ${ACCENT}, ${CYAN})`,
-                color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: "'Syne', sans-serif",
-                boxShadow: `0 2px 20px ${ACCENT_GLOW}`,
-                display: 'flex', alignItems: 'center', gap: 5,
-                transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = `0 4px 32px ${ACCENT_GLOW}, 0 0 60px rgba(34,211,238,0.2)`
-                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = `0 2px 20px ${ACCENT_GLOW}`
-                e.currentTarget.style.transform = 'translateY(0) scale(1)'
-              }}>
-              Get Started <ChevronRight className="w-3 h-3" />
-            </button>
-          </nav>
-
-          {/* Mobile */}
-          <div className="flex md:hidden" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-            <button onClick={() => setIsDark(d => !d)} style={{ padding: 8, borderRadius: 8, background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', border: 'none', cursor: 'pointer', color: isDark ? '#a1a1aa' : '#71717a' }}>
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-            <button onClick={() => setMobileOpen(true)} style={{ padding: 8, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', color: isDark ? '#a1a1aa' : '#71717a' }}>
-              <Menu className="w-5 h-5" />
-            </button>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      <MobileMenu isOpen={mobileOpen} onClose={() => setMobileOpen(false)} activeSection={activeSection} onNavClick={handleNavClick} onCTAClick={() => setContactOpen(true)} isDark={isDark} onThemeToggle={() => setIsDark(d => !d)} />
+      <MobileMenu
+        isOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        activeSection={activeSection}
+        onNavClick={handleNavClick}
+        onCTAClick={() => setContactOpen(true)}
+        isDark={isDark}
+        onThemeToggle={() => setIsDark((d) => !d)}
+      />
+      
       <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
     </>
   )

@@ -47,6 +47,17 @@ export default function Pricing() {
     return () => themeObserver.disconnect()
   }, [])
 
+  // Load fonts
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.href = 'https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap'
+    link.rel = 'stylesheet'
+    document.head.appendChild(link)
+    return () => {
+      document.head.removeChild(link)
+    }
+  }, [])
+
   // Intersection Observer for animations
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -86,7 +97,7 @@ export default function Pricing() {
       ],
       timeline: "3-7 days",
       timelineIcon: Clock,
-      color: "brand",
+      color: "orange",
       bestFor: ["Maintenance", "Quick wins", "Urgent fixes"],
       features: [
         "Priority support",
@@ -107,7 +118,7 @@ export default function Pricing() {
       ],
       timeline: "4-8 weeks",
       timelineIcon: Calendar,
-      color: "brand",
+      color: "red",
       bestFor: ["Growing startups", "Business tools", "System upgrades"],
       features: [
         "Scalable architecture",
@@ -129,7 +140,7 @@ export default function Pricing() {
       ],
       timeline: "10-16 weeks",
       timelineIcon: Shield,
-      color: "brand",
+      color: "amber",
       bestFor: ["VC-backed startups", "Enterprise clients", "Marketplaces"],
       features: [
         "Advanced security",
@@ -153,18 +164,19 @@ export default function Pricing() {
       ref={sectionRef}
       className={`py-20 transition-colors duration-300 relative overflow-hidden ${
         isDarkMode 
-          ? 'bg-[#000000]' 
-          : 'bg-[#ffffff]'
+          ? 'bg-gradient-to-b from-gray-950 via-orange-950/10 to-gray-950' 
+          : 'bg-gradient-to-b from-gray-50 via-white to-gray-50'
       }`} 
       id="Pricing"
+      style={{ fontFamily: "'Quicksand', sans-serif" }}
     >
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute top-20 left-10 w-64 h-64 rounded-full blur-3xl transition-opacity duration-1000 ${
-          isDarkMode ? 'bg-[#4f6ef7]/5' : 'bg-[#4f6ef7]/3'
+          isDarkMode ? 'bg-orange-500/8' : 'bg-orange-500/5'
         } ${isVisible ? 'opacity-100' : 'opacity-0'}`} />
         <div className={`absolute bottom-20 right-10 w-96 h-96 rounded-full blur-3xl transition-opacity duration-1000 delay-500 ${
-          isDarkMode ? 'bg-[#4f6ef7]/5' : 'bg-[#4f6ef7]/3'
+          isDarkMode ? 'bg-red-600/8' : 'bg-red-500/5'
         } ${isVisible ? 'opacity-100' : 'opacity-0'}`} />
       </div>
 
@@ -173,66 +185,74 @@ export default function Pricing() {
         <div className={`text-center mb-16 transition-all duration-1000 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'
         }`}>
-          <h2 className={`text-3xl md:text-4xl font-bold mb-4 transition-colors duration-300 ${
-            isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-          }`}>
-            Investment & Pricing
+          <h2 className={`text-3xl md:text-4xl font-black mb-4 transition-colors duration-300 ${
+            isDarkMode ? 'text-gray-50' : 'text-gray-900'
+          }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+            Investment & Pricing 💰
           </h2>
           <p className={`text-lg max-w-2xl mx-auto transition-colors duration-300 ${
-            isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
+            isDarkMode ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            Transparent pricing for predictable budgeting
+            Transparent pricing for predictable budgeting 🐯
           </p>
         </div>
 
         {/* Pricing Philosophy */}
-        <div className={`border rounded-2xl p-8 mb-16 transition-all duration-1000 delay-200 hover:shadow-xl ${
+        <div className={`border-2 rounded-2xl p-8 mb-16 transition-all duration-1000 delay-200 hover:shadow-xl ${
           isDarkMode
-            ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/10'
-            : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/10'
+            ? 'bg-gray-900/50 border-orange-500/20 hover:border-orange-500/60 hover:shadow-orange-500/10'
+            : 'bg-white border-orange-200 hover:border-orange-400 hover:shadow-orange-500/10'
         } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="flex flex-col lg:flex-row items-center gap-8">
             <div className="lg:w-1/4">
-              <div className={`w-20 h-20 rounded-xl flex items-center justify-center mx-auto lg:mx-0 transition-all duration-500 hover:scale-110 hover:rotate-3 bg-[#4f6ef7] bg-opacity-10`}>
-                <DollarSign className="w-10 h-10 text-[#4f6ef7]" />
+              <div className={`w-20 h-20 rounded-xl flex items-center justify-center mx-auto lg:mx-0 transition-all duration-500 hover:scale-110 hover:rotate-3 ${
+                isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
+              }`}>
+                <DollarSign className={`w-10 h-10 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
               </div>
             </div>
             
             <div className="lg:w-3/4">
-              <h3 className={`text-2xl font-bold mb-4 transition-colors duration-300 ${
-                isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-              }`}>
-                Our Pricing Philosophy
+              <h3 className={`text-2xl font-black mb-4 transition-colors duration-300 ${
+                isDarkMode ? 'text-gray-50' : 'text-gray-900'
+              }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                Our Pricing Philosophy 🎯
               </h3>
               <p className={`mb-6 transition-colors duration-300 ${
-                isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
                 We believe in transparent, predictable pricing. No hidden fees, no surprise invoices. 
                 Every project starts with a detailed proposal so you know exactly what you're getting.
               </p>
               <div className="flex flex-wrap gap-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#4f6ef7] bg-opacity-10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-[#4f6ef7]" />
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
+                  }`}>
+                    <CheckCircle className={`w-4 h-4 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
                   </div>
-                  <span className={`transition-colors duration-300 ${
-                    isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
+                  <span className={`transition-colors duration-300 font-medium ${
+                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
                   }`}>Fixed-price proposals</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#4f6ef7] bg-opacity-10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-[#4f6ef7]" />
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
+                  }`}>
+                    <CheckCircle className={`w-4 h-4 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
                   </div>
-                  <span className={`transition-colors duration-300 ${
-                    isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
+                  <span className={`transition-colors duration-300 font-medium ${
+                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
                   }`}>No hidden costs</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#4f6ef7] bg-opacity-10 flex items-center justify-center">
-                    <CheckCircle className="w-4 h-4 text-[#4f6ef7]" />
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
+                  }`}>
+                    <CheckCircle className={`w-4 h-4 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
                   </div>
-                  <span className={`transition-colors duration-300 ${
-                    isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
+                  <span className={`transition-colors duration-300 font-medium ${
+                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
                   }`}>Clear deliverables</span>
                 </div>
               </div>
@@ -245,68 +265,70 @@ export default function Pricing() {
           {pricingTiers.map((tier, index) => (
             <div 
               key={index}
-              className={`group relative border rounded-2xl p-8 transition-all duration-700 hover:scale-105 hover:shadow-2xl ${
+              className={`group relative border-2 rounded-2xl p-8 transition-all duration-700 hover:scale-105 hover:shadow-2xl ${
                 isDarkMode
-                  ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/20'
-                  : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7] hover:shadow-[#4f6ef7]/10'
+                  ? 'bg-gray-900/50 border-orange-500/20 hover:border-orange-500/60 hover:shadow-orange-500/20'
+                  : 'bg-white border-orange-200 hover:border-orange-400 hover:shadow-orange-500/10'
               } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
               style={{ transitionDelay: `${index * 200}ms` }}
             >
               {/* Popular Badge */}
               {tier.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="flex items-center gap-1 px-4 py-2 bg-[#4f6ef7] text-white text-sm font-semibold rounded-full shadow-lg">
+                  <div className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 text-white text-sm font-bold rounded-full shadow-lg" style={{ fontFamily: "'Rubik', sans-serif" }}>
                     <Sparkles className="w-4 h-4" />
-                    <span>Most Popular</span>
+                    <span>Most Popular 🔥</span>
                   </div>
                 </div>
               )}
 
               {/* Tier Header */}
               <div className="text-center mb-8">
-                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 bg-[#4f6ef7] bg-opacity-10`}>
-                  <tier.icon className="w-10 h-10 text-[#4f6ef7]" />
-                </div>
-                <h3 className={`text-2xl font-bold mb-2 transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${
+                  isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
                 }`}>
+                  <tier.icon className={`w-10 h-10 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
+                </div>
+                <h3 className={`text-2xl font-black mb-2 transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-50' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
                   {tier.name}
                 </h3>
-                <div className="text-4xl font-bold mb-2 text-[#4f6ef7]">
+                <div className="text-4xl font-black mb-2 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent" style={{ fontFamily: "'Rubik', sans-serif" }}>
                   {tier.price}
                 </div>
                 <p className={`text-sm transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
                   {tier.description}
                 </p>
               </div>
 
               {/* Timeline */}
-              <div className={`flex items-center justify-center gap-3 mb-8 p-3 rounded-xl transition-colors duration-300 ${
+              <div className={`flex items-center justify-center gap-3 mb-8 p-3 rounded-xl transition-colors duration-300 border-2 ${
                 isDarkMode 
-                  ? 'bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]' 
-                  : 'bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.08)]'
+                  ? 'bg-gray-900/50 border-orange-500/20' 
+                  : 'bg-orange-50 border-orange-200'
               }`}>
-                <tier.timelineIcon className="w-5 h-5 text-[#4f6ef7]" />
-                <span className={`font-semibold transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-                }`}>{tier.timeline}</span>
+                <tier.timelineIcon className={`w-5 h-5 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
+                <span className={`font-bold transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-50' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>{tier.timeline}</span>
               </div>
 
               {/* Features */}
               <div className="mb-8">
-                <h4 className={`text-sm font-semibold mb-4 uppercase tracking-wide transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
-                }`}>
-                  Key Features:
+                <h4 className={`text-sm font-bold mb-4 uppercase tracking-wide transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  Key Features: ⚡
                 </h4>
                 <div className="space-y-3">
                   {tier.features?.map((feature, idx) => (
                     <div key={idx} className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-[#4f6ef7]" />
-                      <span className={`text-sm transition-colors duration-300 ${
-                        isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
+                      <div className={`w-2 h-2 rounded-full ${isDarkMode ? 'bg-orange-400' : 'bg-orange-600'}`} />
+                      <span className={`text-sm transition-colors duration-300 font-medium ${
+                        isDarkMode ? 'text-gray-200' : 'text-gray-900'
                       }`}>{feature}</span>
                     </div>
                   ))}
@@ -315,17 +337,17 @@ export default function Pricing() {
 
               {/* Projects */}
               <div className="mb-8">
-                <h4 className={`text-sm font-semibold mb-4 transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-                }`}>
-                  Typical Projects:
+                <h4 className={`text-sm font-bold mb-4 transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  Typical Projects: 🚀
                 </h4>
                 <ul className="space-y-3">
                   {tier.projects.map((project, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <div className="w-1.5 h-1.5 mt-2 rounded-full bg-[#4f6ef7]" />
+                      <div className={`w-1.5 h-1.5 mt-2 rounded-full ${isDarkMode ? 'bg-orange-400' : 'bg-orange-600'}`} />
                       <span className={`text-sm transition-colors duration-300 ${
-                        isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
+                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
                       }`}>{project}</span>
                     </li>
                   ))}
@@ -333,23 +355,24 @@ export default function Pricing() {
               </div>
 
               {/* Best For */}
-              <div className={`pt-6 border-t transition-colors duration-300 ${
-                isDarkMode ? 'border-[rgba(255,255,255,0.08)]' : 'border-[rgba(0,0,0,0.08)]'
+              <div className={`pt-6 border-t-2 transition-colors duration-300 ${
+                isDarkMode ? 'border-gray-800' : 'border-gray-200'
               }`}>
-                <h4 className={`text-sm font-semibold mb-3 transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-                }`}>
-                  Best For:
+                <h4 className={`text-sm font-bold mb-3 transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  Best For: 🎯
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {tier.bestFor.map((item, idx) => (
                     <span
                       key={idx}
-                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors duration-300 ${
+                      className={`px-3 py-1 rounded-full text-xs font-bold border-2 transition-colors duration-300 ${
                         isDarkMode
-                          ? 'border-[#4f6ef7] text-[#4f6ef7] bg-[#4f6ef7]/10'
-                          : 'border-[#4f6ef7] text-[#4f6ef7] bg-[#4f6ef7]/5'
+                          ? 'border-orange-500/40 text-orange-400 bg-orange-500/10'
+                          : 'border-orange-300 text-orange-700 bg-orange-50'
                       }`}
+                      style={{ fontFamily: "'Rubik', sans-serif" }}
                     >
                       {item}
                     </span>
@@ -361,17 +384,17 @@ export default function Pricing() {
         </div>
 
         {/* Included in All Projects */}
-        <div className={`border rounded-2xl p-8 mb-16 transition-all duration-1000 delay-700 hover:shadow-xl ${
+        <div className={`border-2 rounded-2xl p-8 mb-16 transition-all duration-1000 delay-700 hover:shadow-xl ${
           isDarkMode
-            ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7]'
-            : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7]'
+            ? 'bg-gray-900/50 border-orange-500/20 hover:border-orange-500/60'
+            : 'bg-white border-orange-200 hover:border-orange-400'
         } ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-          <h3 className={`text-2xl font-bold mb-8 text-center transition-colors duration-300 ${
-            isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-          }`}>
+          <h3 className={`text-2xl font-black mb-8 text-center transition-colors duration-300 ${
+            isDarkMode ? 'text-gray-50' : 'text-gray-900'
+          }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
             <span className="relative">
-              Included in Every Project
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4f6ef7] rounded-full" />
+              Included in Every Project 🐯
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-orange-600 to-red-600 rounded-full" />
             </span>
           </h3>
           <div className="grid md:grid-cols-3 gap-6">
@@ -380,12 +403,14 @@ export default function Pricing() {
                 key={index} 
                 className="flex items-center gap-4 p-4 rounded-xl transition-all duration-300 hover:translate-x-1"
               >
-                <div className="w-10 h-10 rounded-lg bg-[#4f6ef7] bg-opacity-10 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-5 h-5 text-[#4f6ef7]" />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
+                }`}>
+                  <CheckCircle className={`w-5 h-5 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
                 </div>
-                <span className={`font-medium transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-                }`}>{item}</span>
+                <span className={`font-bold transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>{item}</span>
               </div>
             ))}
           </div>
@@ -394,33 +419,35 @@ export default function Pricing() {
         {/* Free Estimate CTA */}
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left Column - What You Get */}
-          <div className={`border rounded-2xl p-8 transition-all duration-1000 delay-800 hover:shadow-xl ${
+          <div className={`border-2 rounded-2xl p-8 transition-all duration-1000 delay-800 hover:shadow-xl ${
             isDarkMode
-              ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7]'
-              : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7]'
+              ? 'bg-gray-900/50 border-orange-500/20 hover:border-orange-500/60'
+              : 'bg-white border-orange-200 hover:border-orange-400'
           } ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'}`}>
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-xl bg-[#4f6ef7] bg-opacity-10 flex items-center justify-center transition-all duration-500 hover:scale-110 hover:rotate-3">
-                <Phone className="w-8 h-8 text-[#4f6ef7]" />
+              <div className={`w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-500 hover:scale-110 hover:rotate-3 ${
+                isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
+              }`}>
+                <Phone className={`w-8 h-8 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
               </div>
               <div>
-                <h3 className={`text-2xl font-bold transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-                }`}>
-                  Not Sure Where You Fit?
+                <h3 className={`text-2xl font-black transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-50' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  Not Sure Where You Fit? 🤔
                 </h3>
                 <p className={`transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
+                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>Get a free estimate in 24 hours</p>
               </div>
             </div>
 
             <div className="space-y-6">
               <div>
-                <h4 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-                }`}>
-                  We'll review your requirements and provide:
+                <h4 className={`text-lg font-bold mb-4 transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  We'll review your requirements and provide: 📋
                 </h4>
                 <div className="grid grid-cols-2 gap-4">
                   {[
@@ -431,16 +458,16 @@ export default function Pricing() {
                   ].map((item, index) => (
                     <div 
                       key={index} 
-                      className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:translate-x-1 ${
+                      className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:translate-x-1 border-2 ${
                         isDarkMode 
-                          ? 'bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]' 
-                          : 'bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.08)]'
+                          ? 'bg-gray-900/50 border-orange-500/20' 
+                          : 'bg-orange-50 border-orange-200'
                       }`}
                     >
-                      <item.icon className="w-5 h-5 text-[#4f6ef7]" />
-                      <span className={`text-sm font-medium transition-colors duration-300 ${
-                        isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-                      }`}>{item.text}</span>
+                      <item.icon className={`w-5 h-5 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
+                      <span className={`text-sm font-bold transition-colors duration-300 ${
+                        isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                      }`} style={{ fontFamily: "'Rubik', sans-serif" }}>{item.text}</span>
                     </div>
                   ))}
                 </div>
@@ -448,10 +475,11 @@ export default function Pricing() {
 
               <button 
                 onClick={() => setIsContactModalOpen(true)} 
-                className="group w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-[#4f6ef7] text-white font-semibold rounded-xl hover:bg-[#4f6ef7]/90 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#4f6ef7]/25"
+                className="group w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 text-white font-black rounded-xl hover:shadow-xl hover:shadow-orange-500/25 transition-all duration-300 hover:scale-105"
+                style={{ fontFamily: "'Rubik', sans-serif" }}
               >
                 <Phone className="w-5 h-5" />
-                <span>Get Free Estimate</span>
+                <span>Get Free Estimate 🚀</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -460,19 +488,21 @@ export default function Pricing() {
           {/* Right Column - Additional Info */}
           <div className="space-y-6">
             {/* Investment Protection */}
-            <div className={`border rounded-2xl p-8 transition-all duration-1000 delay-900 hover:shadow-xl ${
+            <div className={`border-2 rounded-2xl p-8 transition-all duration-1000 delay-900 hover:shadow-xl ${
               isDarkMode
-                ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7]'
-                : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7]'
+                ? 'bg-gray-900/50 border-orange-500/20 hover:border-orange-500/60'
+                : 'bg-white border-orange-200 hover:border-orange-400'
             } ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'}`}>
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-xl bg-[#4f6ef7] bg-opacity-10 flex items-center justify-center">
-                  <Shield className="w-7 h-7 text-[#4f6ef7]" />
-                </div>
-                <h4 className={`text-xl font-bold transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                  isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
                 }`}>
-                  Investment Protection
+                  <Shield className={`w-7 h-7 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
+                </div>
+                <h4 className={`text-xl font-black transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-50' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  Investment Protection 🛡️
                 </h4>
               </div>
               <ul className="space-y-4">
@@ -483,9 +513,11 @@ export default function Pricing() {
                   "Post-launch transition period"
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3 group">
-                    <div className="w-2 h-2 rounded-full bg-[#4f6ef7] group-hover:scale-150 transition-transform duration-300" />
+                    <div className={`w-2 h-2 rounded-full group-hover:scale-150 transition-transform duration-300 ${
+                      isDarkMode ? 'bg-orange-400' : 'bg-orange-600'
+                    }`} />
                     <span className={`transition-colors duration-300 ${
-                      isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
+                      isDarkMode ? 'text-gray-400' : 'text-gray-600'
                     }`}>{item}</span>
                   </li>
                 ))}
@@ -493,19 +525,21 @@ export default function Pricing() {
             </div>
 
             {/* Payment Options */}
-            <div className={`border rounded-2xl p-8 transition-all duration-1000 delay-1000 hover:shadow-xl ${
+            <div className={`border-2 rounded-2xl p-8 transition-all duration-1000 delay-1000 hover:shadow-xl ${
               isDarkMode
-                ? 'bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.08)] hover:border-[#4f6ef7]'
-                : 'bg-[rgba(0,0,0,0.02)] border-[rgba(0,0,0,0.08)] hover:border-[#4f6ef7]'
+                ? 'bg-gray-900/50 border-orange-500/20 hover:border-orange-500/60'
+                : 'bg-white border-orange-200 hover:border-orange-400'
             } ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'}`}>
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-xl bg-[#4f6ef7] bg-opacity-10 flex items-center justify-center">
-                  <ShoppingCart className="w-7 h-7 text-[#4f6ef7]" />
-                </div>
-                <h4 className={`text-xl font-bold transition-colors duration-300 ${
-                  isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                  isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100'
                 }`}>
-                  Payment Options
+                  <ShoppingCart className={`w-7 h-7 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`} />
+                </div>
+                <h4 className={`text-xl font-black transition-colors duration-300 ${
+                  isDarkMode ? 'text-gray-50' : 'text-gray-900'
+                }`} style={{ fontFamily: "'Rubik', sans-serif" }}>
+                  Payment Options 💳
                 </h4>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -517,18 +551,18 @@ export default function Pricing() {
                 ].map((option, index) => (
                   <div 
                     key={index} 
-                    className={`p-4 rounded-xl text-center transition-all duration-300 hover:scale-105 ${
+                    className={`p-4 rounded-xl text-center transition-all duration-300 hover:scale-105 border-2 ${
                       isDarkMode 
-                        ? 'bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]' 
-                        : 'bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.08)]'
+                        ? 'bg-gray-900/50 border-orange-500/20' 
+                        : 'bg-orange-50 border-orange-200'
                     }`}
                   >
-                    <div className={`text-sm font-semibold mb-1 transition-colors duration-300 ${
-                      isDarkMode ? 'text-[#fafafa]' : 'text-[#09090b]'
-                    }`}>{option.label}</div>
+                    <div className={`text-sm font-bold mb-1 transition-colors duration-300 ${
+                      isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                    }`} style={{ fontFamily: "'Rubik', sans-serif" }}>{option.value}</div>
                     <div className={`text-xs transition-colors duration-300 ${
-                      isDarkMode ? 'text-[#a1a1aa]' : 'text-[#71717a]'
-                    }`}>{option.value}</div>
+                      isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>{option.label}</div>
                   </div>
                 ))}
               </div>
@@ -545,35 +579,4 @@ export default function Pricing() {
       />
     </section>
   )
-}
-
-// Helper function for color classes with dark mode support
-function getColorClass(color: string, isDarkMode: boolean) {
-  if (isDarkMode) {
-    switch (color) {
-      case 'brand':
-        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
-      case 'blue':
-        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
-      case 'emerald':
-        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
-      case 'purple':
-        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
-      default:
-        return { bg: 'bg-[rgba(79,110,247,0.2)]', text: 'text-[#4f6ef7]' }
-    }
-  } else {
-    switch (color) {
-      case 'brand':
-        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
-      case 'blue':
-        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
-      case 'emerald':
-        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
-      case 'purple':
-        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
-      default:
-        return { bg: 'bg-[rgba(79,110,247,0.1)]', text: 'text-[#4f6ef7]' }
-    }
-  }
 }
