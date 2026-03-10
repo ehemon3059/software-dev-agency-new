@@ -180,9 +180,10 @@ export default function Footer() {
                   { label: "CaseStudies", href: "#CaseStudies" },
                   { label: "ProblemSolution", href: "#ProblemSolution" },
                   { label: "ProcessSection", href: "#ProcessSection" },
-                  { label: "Founders", href: "#Founders" },
+                  // { label: "Founders", href: "#Founders" },
                   // { label: "Blog", href: "#", optional: true },
-                  { label: "Pricing", href: "#Pricing" }
+                  { label: "Pricing", href: "#Pricing" },
+                  { label: "FAQ", href: "#FAQ" },
                 ].map((link, index) => (
                   <li key={index}>
                     <a

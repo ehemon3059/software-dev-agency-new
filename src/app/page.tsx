@@ -54,7 +54,7 @@ export default function Home() {
 
       <Testimonials /> 
 
-      <FoundersSection />
+      {/* <FoundersSection /> */}
 
     <Pricing />
 

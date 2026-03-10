@@ -22,8 +22,10 @@ const NAV_ITEMS = [
   { id: 'CaseStudies', label: 'Work', href: '#CaseStudies', emoji: '🎨' },
   { id: 'ProblemSolution', label: 'Solutions', href: '#ProblemSolution', emoji: '💡' },
   { id: 'ProcessSection', label: 'Process', href: '#ProcessSection', emoji: '🔧' },
-  { id: 'Founders', label: 'Team', href: '#Founders', emoji: '👥' },
+  { id: 'TechStack', label: 'Tech', href: '#TechStack', emoji: '⚡' },
+  // { id: 'Founders', label: 'Team', href: '#Founders', emoji: '👥' },
   { id: 'Pricing', label: 'Pricing', href: '#Pricing', emoji: '💰' },
+  { id: 'FAQ', label: 'FAQ', href: '#FAQ', emoji: '❓' }
 ]
 
 function useTheme() {
